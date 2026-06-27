@@ -1,0 +1,2525 @@
+[0:01 - 0:44] Bien, en este video eh vamos a trabajar
+con lo que sería la
+implementación de identity. Eh,
+lo que nosotros hemos trabajado hasta
+ahora es la configuración. Ahora vamos a
+trabajar la implementación.
+Eh, para comenzar eh con el tema de la
+implementación,
+lo que vamos a hacer es lo siguiente.
+Cuando nosotros creamos un sistema,
+eh, normalmente, bueno, normalmente no,
+pero hay sistemas que tú naciendo un
+usuario para utilizarlo. un sistema que
+inician un login y pueden tener tienes
+que tener un usuario creado para poder
+hacer el sistema y son sistemas que no
+
+[0:44 - 1:25] tienen la premura de tener un registro,
+un regístrate porque no son aplicaciones
+públicas.
+Eh, en esos escenarios que uno suele
+hacer, uno suele crear un usuario de en
+la base de datos, administrador para a
+través de administrador poder entrar y
+crear usuarios del tipo que necesitemos.
+O se suele correr el aplicativo en una
+primera versión sin seguridad, entrar a
+la URL de mantenimiento de usuario,
+crear un usuario administrador,
+bajar esa aplicativo y ya subirla con
+seguridad, pero ya con un usuario
+administrador creado.
+Eh, esos dos mecanismos, aunque
+
+[1:25 - 2:13] funcionales, no son lo los ideales. Lo
+ideal es que el mismo sistema de manera
+automatizada, cuando él el sistema se
+ejecute
+cree los usuarios que él necesite o la
+data que él necesite para trabajar, en
+este caso la data de los usuarios y y
+los roles también, los roles por el
+efecto que va a tener el sistema, pues
+también deberían de
+poder crearse de manera automatizada.
+Para eso hay que utilizar un concepto
+que se llama sit. Es como germinar, me
+parece la traducción en español, eh, que
+es básicamente el poblar un con datos
+una tabla, o sea, el situación de datos.
+
+[2:13 - 2:57] Entonces, lo que nosotros vamos a hacer
+es antes de ir a la implementación es
+lograr que el sistema pueda
+por sí solo pues crear lo que necesita
+para funcionar, o sea, los sits
+necesarios para que esto funcione.
+Entonces, para eso yo voy a agregar un
+for aquí en la capa de identity que voy
+a llamar sits.
+Eh, vamos a comenzar, por ejemplo, con
+la creación de los roles básicos. Vamos
+agregar una clases acá.
+Vamos a llamar default
+base, default roles. Sí, default roles.
+Llamar default rol roles por defecto.
+Es una clase pública
+
+[2:57 - 3:44] estática pudiera ser.
+Eh,
+¿qué se va a llamar así? va a tener un
+método público estático
+eh asíncrono, que va a ser un task eh
+que se llama sit ass.
+Y veo
+qué yo necesito para poder crear un rol.
+Para poder crear un rolito
+utilizar el servicio para crear roles
+que me provee Identity. Lo que pasa es
+que los servicios en NG se llama
+manager. Yo necesito un roll manager.
+Aquí le especifico cuál es cuál es la
+entidad que está manejando los roles. En
+este caso es Identity RLE
+
+[3:44 - 4:40] y a esto le llamo RLE Manager. Entonces
+ya a través de ese RLE Manager yo puedo
+crear mis roles.
+Ass
+digo new, perdón, new identity. Roll.
+Pam, pam, pam, pam. Y aquí le pongo el,
+bueno, us constructor normal para tener
+que utilizar lo demás. Conctor normal y
+le paso los datos. Vamos a poner, vamos
+a tener por ejemplo este sistema el roll
+admin.
+Esto es así, así que lleva wait.
+Vamos a tener admin.
+o admin
+basic
+y
+
+[4:40 - 5:22] super admin.
+Bien, entonces vamos a manejar
+pues esos roles.
+Esos son los roles que yo creo que se
+quiero que se creen por defecto.
+Algo interesante que tienes en cuenta
+sobre esto que esto va a correr cada vez
+que el sistema corra.
+Entonces, cada vez que el sistema corra
+esos tres roles se van a crear, no.
+internamente eso tiene una obligación
+que él dice, si ese rol existe, él no lo
+crea y si,
+o sea, si perdón, si no existe, él lo
+crea el rol y si existe no lo crea.
+Siempre va a validar este rollo está
+
+[5:22 - 6:13] creado, siga pues no lo creo. Este er
+creado no por pues lo creo. Eso no
+importa que el sistema corra n veces
+solamente lo va a crear la primera vez,
+o sea, cuando no estén creado.
+Eh, ahora vamos a crear eh el sitio
+default. Ahí puse un folder si queremos
+y yo puedo hacer copy paste de este.
+Vamos a llamarle a este
+default basic user. Vamos a crear un
+usuario básico. Bueno, mentir, este
+sistema no tiene basic user. Este
+sistema tiene admin investor
+de investor user. Perdón.
+sistema tiene adni
+investor
+
+[6:13 - 6:57] y super admin. Eh, voy a tener super
+admin,
+no admin investor solamente
+admin y investor puede tener super admin
+del investor. Ya tiene sentido. Un super
+admin es un cero que tiene todos los
+roles, pero en este sistema no
+lo voy a crear porque un superadmin
+puede tener un acceso especial, un
+permiso especial que no tenga el
+administrador. Se puede ser usar para un
+desarrollador,
+puede entrar a unas configuraciones
+especiales que cambien cosas en el
+software y un administrador más como un
+usuario normal que tiene más permiso.
+
+[6:57 - 7:40] Voy a tener super admin ahí por si tengo
+una configuración de ese escala, pero no
+voy a tener usuario
+super admin porque no es necesario en
+este sistema. Voy a tener un investor y
+un admin. Entonces, default investor
+user
+igual el método sin ass. Pero en este
+caso yo no quiero crear un roll, quiero
+crear un usuario. Para crear un usuario
+en vez de utilizar RLE manager, tengo
+que utilizar user manager. Verifico la
+entidad que manejar los usuarios, que es
+add user
+y user manager. Entonces ahora eh puedo
+crear mi usuario invert store. Entonces
+
+[7:40 - 8:38] yo digo eh app user eh user es igual a
+new.
+Pam pam. Y vamos a crear aquí nuestro
+usuario.
+Vamos name es igual a
+eh
+vamos a ponerle sh
+last name igual
+a do.
+Luego eh el email va a ser igual a
+investor@email.com.
+Eh, vamos a ver el email confirmer.
+Vamos a ponerle igual a true que esté
+confirmado por defecto.
+Luego vamos a decir el font number
+confirm también igual a true por si
+
+[8:38 - 9:26] acaso. Si lo utilizamos algún futuro. El
+username super importante va a ser igual
+a
+basic
+investor.
+Está abajo.
+Eh,
+y ya con ese dato está bien.
+Okay. Entonces,
+eh,
+tenemos que validar, acuérdate, siempre
+tenemos que pensar que esto corre cada
+vez que el sistema
+se ejecuta. Tenemos que validar que no
+exista un usuario con
+el ID del usuario que se está
+
+[9:26 - 10:03] con el ID del usuario que se está
+creando. Este ID ahora mismo su valor es
+es cero. Es cero, no es como un guil, es
+un guil default.
+Entonces, hay que validar que
+efectivamente ya necesita un usuario con
+ese ID, porque si necesito un usuario
+con ese ID, lo que posiblemente haya
+sucedido que es que efectivamente ya el
+usuario default se creó. Entonces vamos
+a hacer esa primera validación. Decimos,
+sí,
+cómo yo accedo a todos los usuarios que
+hay en el sistema creado a través del
+user manager, yo puedo acceder a la
+entidad de usuarios. users es un debes
+
+[10:03 - 10:43] que tiene todos los usuarios, todos los
+usuarios que hay creados en el en el
+aplicativo. Eso como tú decí divtex pun,
+qué sé yo, eh, assets y tiene acceso a
+todos los activos, a la tabla de
+activos. Esto es lo mismo. A través de
+manager, la propiedad user me da acceso
+al listado de todos los usuarios, o sea,
+los ususer que hay creado en la base de
+datos. Esto me lo devuelve de tipo
+iquable. Todavía no es un listado.
+Entonces, hay un método de linkq que se
+llama all.
+Ese método lo que hace es básicamente
+decir, mira,
+eso devuelve un buleano, true o false.
+
+[10:43 - 11:22] El buliano básicamente devuelve true si
+todos los elementos del listado cumple
+con la condición que tú le pongas.
+Entonces tú le vas a decir, mira, si
+todos los usuarios creado su ID es
+diferente del ID del usuario que yo
+estoy creando, pues significa
+pues significa que efectivamente no hay
+ningún usuario con ese ID creado. O sea,
+si todos los usuarios que dan la base de
+datos cumplen en esta condición que se
+dice diferente al ID del usuario que
+estoy creando porque no existe un
+usuario con ese ID.
+Bien, otra restricción que nosotros
+tenemos es que no puede haber un usuario
+
+[11:22 - 12:05] con el mismo correo. Tenemos que hacer
+esta segunda validación. Aquí va a crear
+un bar que voy a llamar entity
+entity user
+entity
+per entity
+user que va a ser igual a eh
+user manager
+punto
+normalmente cómo tú harías la búsqueda
+por correo tú buscar el listado de
+usuario, luego diría. Entonces tú dirías
+u
+Entonces u. email
+sea igual al usuario que estoy querendo
+crear su y su correo. Esa sería la forma
+
+[12:05 - 12:46] de tú hacerlo y eso tendría que hacerle
+en vez de un Word, perdón, un first on
+defaults
+y tú lo hicieras así. Pero ya por suerte
+para nosotros el user manager tiene un
+método que se llama find by email ass
+que tú le pasas el correo que tú quieres
+buscar y ya no tienes que hacer todo eso
+que yo hice ahora eso es asíncron así
+que lleva a weit
+como yo le dije ya en identity hay
+muchísimos métodos ya creado que yo nada
+más tengo que utilizar hay un método
+para buscar un usero por su correo te lo
+pone el correo y él te devuelve su usual
+usuario. Entonces,
+
+[12:46 - 13:27] si user entity, si entity user, perdón,
+es igual a nulo, o sea, si no hay un
+usuario con ese correo, pues ya yo puedo
+tranquilamente crear mi usuario básico,
+porque significa que no hay un usuario
+con ese ID
+y
+como no hay un usuario con ese ID,
+eh puedo proceder a crearlo, pero
+también verifico que no hay un usuario
+con ese correo porque no pueden tener el
+correo repetido. Entonces, si ya cumplió
+con las condiciones, digo user manager
+punto creins y creo el usuario y esto es
+como ven, yo tuvo que hacer la lógica
+del repositorio per usuari o todo eso
+
+[13:27 - 14:14] está
+creado. Ah, bueno. Y aquí como segundo
+parámetro le paso la contraseña.
+A pasar una contraseña que cumpla con
+las condiciones que puse. 1 2 3 pas,
+¿no? 1 2 3 pas. Sí.
+Eh, word y ahí cumplo con las
+condiciones. Tiene número, tiene
+mayúscula, tiene minúscula y tiene
+caracteres especiales. Bien, entonces
+ahora sí ya
+usuario se va a crear con esa
+contraseña. Esa contraseña obviamente se
+va a crear en la base de datos. Lo que
+está gritando esto aquí.
+Si user manager está bien.
+
+[14:14 - 15:34] Tu
+ser
+es que cómo va ser nul users.
+El problema de esto
+user is not
+y ponga Si lo pongo a aquí.
+Ah, okay.
+Okay.
+Eh, bien. Entonces,
+¿qué sucede? Ese usuario yo lo creé,
+pero ese usuario yo tengo que asignarle
+un rol porque eh son dos procesos
+aparte. ¿Cómo ir haciendo un rol a un
+usuario? dice user manager
+punto eh a to rol asso,
+mira este usuario,
+
+[15:34 - 16:25] a este usuario yo le quiero asignar el
+rol que yo quiera. Esto es ascro, así
+que lleva a weit.
+Entonces aquí vamos a ponerle el rol que
+le quer asignar. Supongamos que la
+creación el rol investor
+a a tu rol, perdón, puse puse plural a
+tu rol, no solo rol a tu rols para darle
+tú le pasas un listado de roles, eso es
+lo que está esperando, un innú stream
+con todos los roles que tú le quieras
+asignar. En este caso no más quiero
+un solo rol, o sea, add tu roll. Aquí
+tengo un
+tema que si yo escribo esto mal, pongo i
+minúscula, esto no es lo mismo que esto,
+
+[16:25 - 17:19] son dos roles diferentes. Entonces, para
+yo evitar el harcodeo de los roles,
+yo eh voy a reutilizar un enum que tengo
+por ahí. Lo voy a reutilizar porque es
+para lo mismo. Este que está aquí,
+perdón.
+Oh, qué interesante.
+Está al revés. Este tiene que llamarse
+así. Eso fue un copy paste por ahí mal
+hecho.
+Acer.
+Vamos a ponerle uno
+y tú debería llamarte roles.
+Tú haces ordered y tú roles
+y tengo admin y investor. Entonces, eh
+aquí no me interesa tanto el número.
+
+[17:19 - 18:08] Este número es necesario,
+me interesa más el texto. Entonces, voy
+a poner aquí admin,
+sí,
+y investor. Así. Entonces,
+eh acá en vez de decir admin, a vamos a
+agregar super admin
+y super admin.
+Entoncesar
+porque algún lado estoy usando rol en
+vez de roles, pero no importa.
+Acá
+voy a decir rol en vez el texto admin yo
+digo roles el enumadmin
+stream y él lo que va a hacer es cometir
+este texto literalmente un stream.
+
+[18:08 - 19:05] Entonces
+replico lo mismo acá
+y lo mismo aquí. Entonces, aquí digo
+investor
+y aquí digo superadmin.
+Entonces acá en vez de decir investor,
+yo digo roles
+punto, perdón, roles
+el usin, por favor
+eh, investor puntu stream
+y escopeta.
+Okay,
+okay. Está nice y bueno, tú no está tan
+nice porque explotado, pero whatever.
+Vamos a crear el próximo usuario. Vamos
+a crear un admin
+
+[19:05 - 19:57] default
+admin user.
+Admin user.
+Okay. Entonces acá
+vamos a ponerle shin do
+admin@email.com
+y le ponemos admin
+llama basic investor. Sí, basic
+investor. Admin. Vamos a ponerle admin.
+Sí, admin.
+Admin, bla bla bla bla. Eh, entonces
+aquí el roll va a ser admin. Okay,
+lo mismo. Se mueve validación. Todo muy
+bien. Okay, entonces ya yo tengo los
+sits para crear
+mis respectivos usador. Déjame agregar
+
+[19:57 - 22:39] el tema de los roles re para que
+exploten. Tengo que cambiar ese nombre.
+No me recuerdo ahora dónde que está.
+tanto sitio.
+Sí,
+cosa que pasa
+son
+Estoy mirando ya.
+un poquito más lento, Pero
+Ok.
+Bien, entonces tengo los sits creados.
+Ahora tengo que hacer que esos zips pues
+corran. ¿Cómo hago para que esos zips
+corran? ¿Qué corre? ¿Qué parte de
+aplicativo corre siempre que corre el
+aplicativo? Bueno, el program. Entonces,
+
+[22:39 - 23:22] los sixs deben correr en el program,
+pero deben de correr en el program
+después que el aplicativo se construye,
+después que se hace el vill. ¿Por qué?
+Porque para yo poder crear usuarios,
+roles y todo eso, yo necesito user
+manager, roll manager y todo eso se
+configura luego que se hacen las
+inyecciones de dependencia que se hacen
+cuando se hace el build. Aquí tú la
+configura y aquí donde efectivamente se
+inyectan todas las dependencias que el
+sistema necesita para funcionar. Y como
+yo necesito esas independencias ya
+inyectadas para poder utilizarla, esa
+ese uso de esos sit
+
+[23:22 - 24:05] de
+que de que se construyera el aplicativo.
+Entonces, para eso eh
+ahora yo, ¿qué necesito hacer? Yo
+necesito correr esos seats. Para correr
+esos seats, yo necesito
+eh dos servicios, que es el user manager
+y el roll manager. ¿Cómo yo hago para el
+program poder ejecutar un servicio que
+yo quiera utilizar? Para eso yo voy a
+utilizar using para encapsular esa
+ejecución. Entonces de del
+de la variable app, perdón, yo voy a
+crear una variable llamada scope, que va
+a ser igual a appunsice,
+¿sí?
+
+[24:05 - 24:53] Create scope.
+Entonces, aquí adentro yo voy a
+configurar esas inyecciones,
+eso voy a configurar que esos seat
+corran. Para poder correr esos seats,
+necesito obtener los servicios que
+necesito para correrlo. User manager y
+roll manager. Para eso tengo que crear
+un service,
+un service provider. Necesito un service
+provider. Lo voy a sacar. Scope pun
+service provider. Perfecto, ya tengo el
+service provider. Luego aquí con try por
+si acaso. Entonces puedo ir a explotar.
+Entonces aquí eh voy a
+a crear mis managers. Entonces digo bar
+
+[24:53 - 25:38] user manager
+es igual a service provider pun get
+required service y le digo el servicio
+que yo estoy requiriendo. Estoy
+requiriendo un user manager
+que el la entidad que maneja los
+usuarios es a user
+ad user.
+Yo creo que ya con es suficiente. Sí.
+Entonces yo lo que estoy haciendo es eso
+que estoy haciendo acá es lo que hace el
+aplicativo por atrás para inyectar la
+dependencia. Esto es una inyección de
+dependencia manual. Nosotros con
+appingeton
+lo hacemos de manera automatizada, pero
+
+[25:38 - 26:13] por detrás cuando la aplicación hace
+bill es lo que hace que busca un service
+provider y va requiriendo todos los
+servicios que se necesitan, va
+inyectando todos los servicios
+necesarios para que se puedan utilizar y
+luego se lo prove el aplicativo a través
+de la configuración que tú le hayas
+puesto aquí.
+Entonces, en este caso, como lo quiero
+discutar en el program, no tengo acceso
+a las configuraciones automática de la
+inyección de dependencia, tengo que
+hacer las inyecciones manuales.
+Entonces, aquí digo role manager, va a
+ser lo mismo, pero aquí en vez de un
+
+[26:13 - 27:13] manager, digo, dame un rle manager y la
+entidad que maneja los roles es identity
+roll.
+Y por último ejecuto los digo wave.
+default default
+roles
+punto assins y le paso el roll manager.
+Entonces voy a correr default
+investor user.
+Aquí le paso el user manager
+y default eh admin
+user y le paso el user manager
+y ya ahí cuando yo corra el el
+aplicativo, eso sí deben de correr,
+pero obviamente eh hay un hay un
+problema eh
+
+[27:13 - 28:07] Esto, ¿verdad? El program del web app no
+debe ser responsable de correr los seats
+que son responsabilidad de la capa de
+identity. Entonces, ¿qué es lo que tengo
+que hacer? Yo lo que tengo que hacer es
+un extension method para yo poder hacer
+eso en identity. En método de quién?
+de en este caso de la
+de esto de la service provider, o sea, a
+esta clase yo le voy a agregar un método
+para lo que sería la
+la el RAM de los seats de la capa de
+identity. Entonces, yo voy a venir aquí
+al serv registration.
+Eh,
+djame yo ocultar esto
+
+[28:07 - 29:05] y va a crear un método público estático
+eh
+asíncrono de tipo task que voy a llamar
+R
+assidentity
+Y aquí voy a hacer el extension method.
+digo this. En este caso hay service
+provider que es lo que quiero extender.
+Service
+y acá todo este código que yo hice aquí
+lo pongo aquí y aquí en vez de decir a
+service create scope yo digo
+service create scope es lo mismo.
+Service provider. Pam, pam, pam, pam.
+Ya. Ahí todo debería de funcionar
+exactamente igual. Vamos a ver cuál es
+
+[29:05 - 29:59] tu problema aquí.
+Ah,
+sessions.
+Offortive
+code. Quiere que lo quiten.
+Puedo quitar.
+Eh, okay.
+Creo que voy a dejar entonces que él
+lance la excepción, ¿no? Que si él
+entiende que está bien que lance la
+excepción, que el sistema se
+tenga, no hay problema. Se simplifica el
+us.
+Okay.
+Okay. Entonces,
+o sea, que yo ahí la excepción no tengo
+
+[29:59 - 30:35] contra qué loguearla, no ten un
+controlador ni nada, no puedo loguear
+contra el C registration, eso no tiene
+sentido. Se lo quito y si la se lanza,
+bueno, que la aplicación no corra
+efectivamente ya se resuelve la la
+excepción y que el aplicativo corra.
+Cuando esto falle, que la aplicación no
+corra. No está todo mal en parte porque
+si no corre el sit eh significa que la
+aplicación no tiene la configuración
+necesaria para funcionar, así que por mí
+no hay problema.
+Entonces nada con el método
+creado, lo que tengo que hacer es
+ejecutarlo en el program. Entonces aquí
+
+[30:35 - 31:37] yo digo eh app.
+Assí,
+así que le pongo a
+ve que el aplicativo está corriendo
+asíncrono también. Entonces ahí ya puedo
+quitar esto de aquí.
+Aquí ya cuando yo corro la aplicación,
+si está todo bien, eh debería de crearse
+es un dos usuarios acá.
+Cer otro que no estoy utilizando
+y roles. Aquí
+vamos a correr el aplicativo
+y vamos a ver.
+Bien, la aplicación ya corrió. Vamos
+acá.
+Efectivamente, se crearon los tres roles
+
+[31:37 - 32:15] y se crearon los usuarios. Como ven, la
+contraseña está hachada. Ya yo no tuve
+que hacer eso, sino que utilizo por mí,
+¿eh?
+Así que todo nice. Miren que los dos
+usos tienen la misma contraseña más sin
+embargo son diferentes porque la
+contraseña cuando él la hachea
+él agrega un sal que como que él c la
+contraseña y le agrega otra parte a la
+contraseña que genera en parte en base a
+la data del usuario. Esa contraseña es
+única para ese usuario, tiene más
+seguridad. Ah, también eh también no
+mentira no es parte de lucero que coge
+el él toma security stand y concurrency
+
+[32:15 - 32:56] st y con eso arma el el sal.
+Entonces, por eso es diferente por cada
+usuario, aunque sea la misma contraseña
+es diferente en cada usuario. es
+seguridad porque aquí ya este sistema si
+yo ciopo esa contraseña se la pongo a
+este eh no va a funcionar porque cuando
+esa contraseña la compare con lo
+concurrencia stand que lleve el security
+stand va a ver que no va a marchar
+cuando le haga el hashing y le no
+manito, está en tu contraseña y ya tú
+sabes, hay poco, ya no es tan fácil
+hacer eso, ¿eh? Miren los ID, como yo
+les dije que lo genera que lo genera
+como un guil, no un ID puntualmente, o
+
+[32:56 - 33:37] sea, es más seguro el sistema. Aquí en
+la tabla de user errores está la
+relación de un usuario con un rol. Ese
+usuario tiene ese rol y usuario tiene
+este rol. Entonces, hay quear esa
+relación. Vamos a ver, todo eso ya
+eh lo maneja Identity por nosotros, ¿no?
+No tenemos que preocuparnos por eso.
+Bien, si vuelvo a correr el aplicativo,
+no debería no debería dar error y no
+deberían de volver a crearse los
+usuarios que ya se crearon y los roles
+tampoco. Vamos a verificar eso.
+El aplicativo corrió.
+Vengo aquí a user, siguen lo mismo dos
+usuarios. Vengo aquí a roles, siguen los
+
+[33:37 - 34:24] mismos tres roles. Entonces ya significa
+que las habiliones que hicimos para que
+no se creen 200,000 veces y no de rol
+por el que intentes crearlo 200,000
+veces están
+funcionando
+bien. Entonces,
+ahora vamos con la parte pesada de la
+implementación, que es la creación del
+servicio que a través del cual vamos a
+tener toda la lógica de Identity. Vamos
+a crear un folder acá,
+eh, que vamos a llamar
+service.
+Ven, acá vamos a agregar una clase
+que vamos a llamar eh account service.
+
+[34:24 - 35:05] Account
+service
+por web app. Eh, va a haber un account
+services para IP y un account services
+para web.
+App
+account service AC o ACC OT. Okay,
+perfecto. Entonces vamos a crear eso,
+una clase pública.
+Voy a hacer la clase primero, la
+implementación y luego genero la
+interfaz
+eh,
+para no para hacerlo
+más lineal del todo. Entonces, acá
+para yo trabajar este account services,
+
+[35:05 - 35:50] yo necesito
+eh
+private only. Voy a utilizar user
+manager, obviamente,
+que entidad user
+eh user manager.
+Voy a necesitar
+role manager, no role manager no.
+Necesitaré sin in manager sin ning
+sinc
+in manager.
+Aquí también tengo que verificar la
+entidad que maneja los usuarios, que es
+ad user
+eh
+manager
+
+[35:50 - 36:39] y
+necesito
+email services.
+service.
+Bien, bien, bien, bien. Con esto yo
+puedo trabajar, creo. Necesito más cosas
+después lo inyectaré. Entonces, digo
+public account services for what app.
+Así quiere hacerlo automático.
+Thank you.
+User manager, sin manager y email
+services. Okay,
+excelente. Entonces, vamos a crear el
+servicio.
+Bien, vamos a crear el primer método que
+sería el de autenticación. Vamos método
+
+[36:39 - 37:43] de login. Si digo public assins,
+eh, va a ser un task que va a devolver
+un login response
+doo. Vamos a crear ese dto
+login response
+dto.
+Entonces eh
+login, perdón, login respondo. Vamos a
+poner todo lo que nosotros queremos del
+usuario allí.
+Vamos a hacer parecido a esto.
+el ID del usuario, el name, last name,
+el email, eh el username,
+eh los roles que tenga su usuario,
+public list
+stream
+
+[37:43 - 38:58] opcional
+roles,
+eh id last name email, username roles.
+Eh, si user está verificado,
+un bull
+is is verified.
+Si hubo un error error intentando hacer
+login
+aquí
+y el error que hubo un stream
+el error que hubo error opcional.
+ID name
+last name email username rolesif
+error login resp
+aquí el
+Eh, bien, entonces
+
+[38:58 - 40:02] sigamos. Eso se va a llamar este método
+autenticate
+crono
+parámetro un login dto
+va a ser el DTO,
+el login D.
+Bien, entonces eh vamos a poner que
+retorne porque es deñir.
+Okay. Entonces
+eh
+vamos a crear un login
+responde to.
+Vamos a llamarle igual a new
+y lo inicializamos.
+igual a vacío.
+ID igual a vacío.
+
+[40:02 - 41:04] Last igual a vacío. ID tiene que ser un
+stream
+name igual a vacío.
+name
+que me falta username
+y el ID en el response de to es un
+stream.
+Bien.
+Okay. Entonces retornamos response.
+Bien. Eh,
+para autenticarnos, lo primero que vamos
+a hacer es buscar si existe un usuario
+con ese username que me mandaron. digo
+bar user va a ser igual a a weight
+eh user manager pun find
+by name él busca Ajá exacto by by name
+
+[41:04 - 42:03] él busca en username login username.
+Okay. Entonces digo, si usuario
+es igual a nul, o sea, si necesito un
+usuario con ese username
+de pongo respond punto has error. Sí,
+tenemos un error true.
+Eh, respond punto error y dio cuál es el
+error. O sea, aquí yo digo,
+¿no?
+Eh,
+there is
+there is bien.
+not account
+registered
+with this
+username. Entonces, aquí pongo dos
+
+[42:03 - 42:51] puntos y pongo el username, sería el
+login tto punto username
+y
+ajá ajá
+y retorno hacia response.
+Return response. Entonces,
+la idea de porque yo le puse el has
+error, justamente para poder tener ahora
+eh errores customizado, o sea, que el
+sistema sea más de mejores feedback, te
+diga si el login falló porque el us
+estaba malo o porque la contraseña
+estaba mala o por si el usuario estaba
+inactivo, lo que sea.
+Entonces vamos ahora
+a validar eh de hecho debemos validar
+
+[42:51 - 43:33] primero, ¿no? No, primero la cuenta
+y después vamos a validar si está activo
+y entonces si existe una cuenta y está
+activa, entonces validamos la
+contraseña.
+Entonces vamos a hacer esto mismo.
+Pero aquí eh
+aquí ya yo sé que hay un usuario con esa
+cuenta porque no entró aquí. Entonces,
+si aquí el usuario efectivamente si
+tiene un usuario con esa cuenta, yo
+puedo decir el email está confirmado. Si
+email confirm
+o si no está confirmado el correo, si
+user email confirma, si no ha activado
+el usuario, porque el correo se confirma
+
+[43:33 - 44:30] cuando hace el proceso de activación de
+usuario,
+eh,
+ponemos esta cuenta, no está activado,
+algo así. Bien, entonces vamos a ponerle
+algo como
+eh this
+this account
+y ahí ponemos la cuenta pausername
+this account
+is not activate.
+No, not active. Puede ser.
+check
+your
+email.
+Okay. Entonces,
+
+[44:30 - 45:18] ahora sí he revisado que
+que se hice una cuenta y que está
+confirmada. Vamos a ver si la contraseña
+que me pasó nice. Entonces digo,
+¿cómo reviso la contraseña? Sencillo.
+Voy a crear una variable,
+voy a llamar resource, va a ser igual a
+sin manager, el sync in manager.
+Entonces digo punto password sin ins.
+Esto para lo guíate ya. Él va a hacer el
+proceso de autenticación. ¿Cómo lo hace?
+Si usted le pasa el usuario,
+el
+sí, el username,
+tú le pasas el usuario,
+eh, sería login dto puntousername o lo
+
+[45:18 - 46:11] puedo sacar de aquí mismo de user más
+seguro,
+user pun eh username y le paso el
+password que le haya pasado en logindto
+punto password.
+Bien, entonces eh
+esto se llama parámetro. Hay que pasarle
+esto de is persistent. Vamos a decir que
+no hicimos false.
+Eso que persista ese
+dato porque lo que hace es que guarda en
+el browser el
+usuario porque se cer la sesión o sí
+puede ser.
+Si yo cierro el browser y lo vuelvo a
+abrir el sistema él va a seguir. Eso es
+
+[46:11 - 46:47] lo que es el system, perdón. Es lo que
+hace es si yo mato un tico,
+si yo cierro el browser y lo vuelvo a
+abrir, eh, me va a recordar, se lo va a
+persistir la cookie en el browser o la
+va a eliminar la cook cuando yo cerre la
+página vuelva a entrar. Vamos a decirle
+que no persista, que cuando se cer el
+browser se se cierre.
+Y esto es eh
+esto lo delout, pero ya lo configuré en
+otro lado. Yo creo que esto no es
+necesario.
+Ya no todavía hay que configurar eso
+también.
+Ah, pasar el locout. El lout vamos a
+
+[46:47 - 47:29] pasar que el uso se bloquee después de
+los fallos de la cantidad de fallos que
+yo ya configurado.
+Eh, ¿cuál es tu problema? Aquí maybe
+nul. 100 pa pa ya resuelto.
+Bien entonces
+esto debe ser asyncron recapitulando
+este método para yo hacer login. Para
+hacer login y paso el nombre de usuario
+y la contraseña. La contraseña que me
+llegó desde la vista.
+Como ven, ya yo no tengo que yo mismo
+estrictando la contraseña ni nada de
+eso, sino que automáticamente eh él ya
+eh por el efecto por detrás va a
+encriptar la contraseña por mí. Tengo
+
+[47:29 - 48:04] que hacer todo, toda esa seguridad, él
+ya la aplica. Luego hay que pasarle un
+tercer parámetro que es se va a
+persistir, que es básicamente si yo cero
+el browser y vuelvo a abrirlo, yo quiero
+que siga logado el usuario o quiero que
+de que cierre el browser o se la pestaña
+se se elimina la sesión y tenga que
+volver a logarse en este caso yo le puse
+force, lo que quiere decir que cuando el
+browser se cierre, bueno, el browser, la
+pestaña no, sí, no el browser, cuando el
+browser se cierre se va a eliminar la
+són. Si quiero que persista, aunque se
+ser y lo vuelva a abrir, siga logueado,
+pues lo pongo true. Y aquí es
+
+[48:04 - 48:50] básicamente lo del
+si yo quiero que el usuario se bloquee
+después de n cantidad de intentos en
+este caso true porque si eso lo
+configuré. Entonces
+eso va a hacer el login, eso va a
+retornar un resultado, un sining result.
+Básicamente ese resultado
+eh
+dependiendo de lo que sea va a ser eh
+bien. Si fue su su es que efectivamente
+con está bien, si no fue su sito.
+Yo digo
+si
+el resultado fue su set su susit, o sea,
+si fue bien en este caso no sabe si fue
+
+[48:50 - 49:54] bien qui si fue mal, si no fue su situa
+lo niego.
+Si no fue su sito,
+info.
+Entonces vamos a poner aquí eh
+ah
+this there, no sé.
+Okay, nos vamos a poner aquí dónde está
+disredential
+credential art invalid
+for, perdón, for this user y ahí pongo
+el usuario pamername
+punto user, perdón, punto username
+Okay.
+Bien. Entonces,
+efectivamente.
+
+[49:54 - 50:34] Entonces, nada, aquí en teoría ya validé
+todo. Primero valido que existen usar
+con esa cuenta. Si no existe, lo le digo
+que no, que no existe. Leo valido si
+está activo. Si está activo, si no está
+activo, le digo que no está activo.
+Luego hago el login que es con este
+método del cine manager. Y si eso no es
+su situa que el usuario, en este caso no
+el usuario, sino la contraseña está mal.
+Y entonces ahora aquí es cuando todo
+esté correcto. Cuando todo esté
+correcto, pues ya yo puedo básicamente
+eh
+ya yo puedo retornar eh
+los datos. Entonces digo response punto
+
+[50:34 - 51:19] id va a ser igual a user punto id.
+Aquí el map lo voy a hacer manual, no lo
+voy a hacer con automaper porque
+tengo entidades que solamente están en
+la capa de identity, que no están en la
+capa de application y tengo el mapping
+en application. Así que en este
+escenario voy a aplicar un mapping
+manual, significa que eso esté mal. Dije
+que hay escenario donde uno tiene que
+utilizar mapping manual
+independientemente de
+eh ¿Qué pasa? Esto es un stream nulable
+y esto no acepta nul. Pues nada. Pam,
+pam, pam, pam.
+Eh, response punto
+
+[51:19 - 52:29] eh
+username igual a user punusername.
+Lo mismo aquí.
+respond punto eh
+name es igual a user.
+Respondlast
+name es igual a user.lastname
+y respond. ¿Qué más le falta respond?
+Tengo username, tengo lastne. Faltan los
+roles. Is verified. Is verifier es igual
+a user.
+Firm
+eh response punto
+has error
+va a ser igual a false, no hay errores.
+Bien, de hecho yo pudiera poner
+
+[52:29 - 53:36] por defecto que no hay errores aquí
+fals
+Bien.
+Okay,
+bien. Eh, entonces, ¿qué más me falta
+del response?
+Y si usame lo tengo. Shfy, también last
+lo tengo. Email también. Error
+necesario. Has error IDs verifier. Me
+faltan los roles. Roles
+va a ser igual a
+eh a punto user manager, no user manager
+punto
+rols. Así yo consigo los roles de un
+usuario. pasa el usuario que quiera
+conseguir sus roles
+
+[53:36 - 55:25] y eh
+punto
+esto me devuelve que me devuelve esto
+un listo
+puedo resultado
+un listo que resolve to
+Un link de stream que er roles
+link de stream nuls. Okay.
+Yo puedo hacer punto configurate a
+false.
+devuelve un task. P un task. Si yo le
+puse una
+deber un listado de stream. Está bien.
+Porque
+si yo cojo el resort
+Okay. Y va a hacer la siguiente manera.
+
+[55:25 - 56:23] Vo crear una variable va a ser aquí
+arriba
+barr list va a ser igual a
+esto que está acá
+va a ser igual a esto que está aquí
+y luego aquí yo digo roll list punist
+y
+excelente control ahora que
+ha aplicado
+okay. Eh,
+bien. Entonces,
+ahí tenemos el login. Sí, tenemos el
+login hecho.
+Eh, vamos ahora con el logout. Más fácil
+logout. Obviamente
+si digo public
+
+[56:23 - 57:46] assins, eso se va a retornar un task y
+esto va a ser sin
+outs
+del logout.
+Entonces digo away C manager
+meo que es sinic out
+y excelente. Siguiente método vamos a
+hacer el register o el create
+register
+es lo mismo.
+Create
+bobling assins task. Esto va a retornar
+un
+esto va a retornar un
+eh vamos a el concepto de regist
+register response
+
+[57:47 - 59:04] Register response TTO.
+Okay. Eh,
+aquí vamos a dejar solamente hacer y
+error solamente.
+Bien, entonces eh vaar un task de tipo
+regist response.
+Vamos a llamarle
+register.
+user.
+Okay. Eh,
+y para esto vamos a usar un safe user
+DTO.
+Ah,
+o un
+Sí, vamos a usar,
+vamos a usar este.
+
+[59:04 - 60:10] No, que los roles ahora
+los roles ahora van a ser stream
+o el rol mejor dicho.
+Okay, entonces
+save user dto
+va a ser igual a
+save DTO.
+Bien, entonces esto es RER respondo.
+Bien.
+Okay.
+Vamos a crear un register respond aquí.
+response igual a new
+y has error igual a false por defecto.
+Bien.
+y retornamos este señor turn response.
+Okay.
+
+[60:10 - 61:03] Vamos a validar que no se puede
+Okay. Vamos a validar que no se puede
+crear el usuario ni con el mismo nombre
+de usuario ni con el mismo correo.
+Entonces para eso
+que va a llamar user with
+same username
+que va a ser igual a a
+user manager
+find by name ojo el username que se
+guardar
+y meto validación
+digo, si user network sem user
+es diferente de número, o sea, si hay un
+usuario ya con este número de usuario,
+eh, digo que hay un error y digo
+
+[61:03 - 62:02] el mensajillo,
+this username,
+this username.
+Caramba,
+esto está en safe ahora.
+Is already
+taken.
+Y vamos a hacer lo mismo, pero
+probabilidad se un solo con el mismo
+correo.
+User
+email.
+Entonces,
+find by email ass
+usamos email y eh
+this email
+
+[62:02 - 63:12] y pongo email
+is already take it
+user
+SL.
+Okay.
+Eh, bien. Si está todo correcto, pues
+vamos a crear el usuario. Entonces,
+B, no, B, no, B
+user va eh llamado user va a ser igual a
+new app user.
+Y vamos arriba.
+Eh, como tú un createó el ID, entonces
+vamos con name
+y luego last name.
+Luego email,
+luego eh
+
+[63:12 - 64:20] se me olvida la de username,
+luego eh
+profile
+Esto no, esto confirm de igual a false
+por defecto cuando está confirmado.
+Vamos a hacer un proceso para eso.
+Eh, yo no tengo número de teléfono. No,
+no, yo creo que no tengo número de
+teléfono.
+No, estoy manejando eso, así que está
+bien. Eh, bien. Entonces
+vamos a crear el usuario. Entonces digo
+bar result igual a ah,
+user manager
+create assins.
+Le paso el user y le paso la contraseña
+
+[64:21 - 65:33] que sería safetto punto password.
+Save dto
+sao tiene sus password. Sí, perfecto.
+Escopetas. Entonces, eh
+digo si resultó
+bien continuamos de lo contrario, si se
+creó mal
+else
+hay problema.
+Hay un error y el error vamos a poner
+algo genérico.
+Add
+error ocurri
+register
+de user
+y puedo poner la excepción
+
+[65:33 - 66:22] en resolve. punto
+lo que me da el error.
+Sí, pero yo no quiero un listado
+de errores. Yo no creo listado
+de errores. Yo no creo listado
+de errores. Yo no creo listado de errores. Está bien, no me
+m
+No, que me da el listado. Está bien.
+Dejarlo genérico.
+Okay. Entonces, si se creó bien, eh,
+ahora tenemos que asignarle el rol.
+Entonces digo ait
+eh user manager punto
+a
+tu roll ass digo, mira el usuario que
+acabo de crear sería user.
+
+[66:22 - 67:19] Eh, asignale el rol que me pasaron por
+parámetro.
+Y ahora
+siguiente paso es mandarle
+el correo. Hay que mandarle un correillo
+a ese señor. Entonces, eh
+el correo para que active el usuario.
+Vamos a intentar mandar el correo away
+email services
+assins
+y tú utilizas algo que se llama email
+request para enviar los correos dto
+new.
+Voy a llamar la clase esa.
+Exacto.
+Email
+
+[67:19 - 68:32] request también aquí.
+¿Por qué?
+tiene conflicto eso. Hay más de uno.
+Okay. El
+que hay quien quiera mandar el correo
+que sería uso que se registró.
+La tiene requirers. Ah, sí tiene
+requirers. Si p lo marca aquí.
+Ahora sí,
+el cuerpo del correo que lo vamos a
+armar ahora va a ser igual a
+please confirm
+your account
+visiting
+la vamos a armar ahora viene coming.
+Zoom.
+
+[68:32 - 69:14] Eh, okay.
+El subject. Vamos a ponerle
+confirm
+registration
+y ya.
+Bien, entonces
+nosotros tenemos que hacer algo
+interesante. Tenemos que armar la URL
+que se le va a enviar al usuario para
+que se pueda
+eh
+registrar. Para eso yo necesito saber el
+origen de la petición que voy a tener un
+stream que va a llamar Origin, que yo
+puedo tener múltiples aplicaciones web.
+Tengo que saber desde cuál aplicación
+
+[69:14 - 70:12] web fue que hicieron la el registro del
+usuario, o sea, el origen, la URL de la
+de la aplicación web que hizo la
+petición. Entonces, eso no lo vamos a
+pasar por el parámetro.
+Entonces, para amar la URL,
+eh, yo voy a crear un método por aquí
+abajo.
+Voy a crear aquí un regions,
+a llamar
+private methods
+en reg. Bien, entonces
+vamos a tener un método privado
+asíncrono,
+que va a ser un tas, que va a retornar
+un stream
+
+[70:12 - 71:20] que va a llamar eh
+get
+verification.
+Get verification
+email.
+Para eso voy a necesitar un add user
+my user y un origin.
+Sí, señor.
+Ahora vamos a hacer que retorne. Nada.
+Entonces acá antes de enviar el correo
+de activación
+register,
+eh
+vamos a conseguir SRL. Yo digo, ¿dónde
+está el correo? Aquí digo, eh, va stream
+verification
+
+[71:20 - 72:12] va a ser igual a away a
+get verification email. Le paso el
+usuario y el origen.
+Vamos a suponer que eso se está haciendo
+ya. Digo, la URL para que el usuario se
+active es verification.
+Entonces ya lo que tengo que hacer es la
+lógica para esa URL que no es tan
+sencillo. Fense que
+esto tengo que hacerlo
+bien.
+Y para hacerlo bien que hacerlo con
+tokens tener que generar un tokens de
+un token de
+de verificación de autenticación.
+Okay.
+
+[72:13 - 73:05] ¿Cómo ese token? ¿Dónde yo lo saco? Ah,
+el Lager me lo da. Okay, está bien. Sí,
+Bien. Entonces, ah,
+vamos a generar el token. Bar token va a
+ser igual a user manager
+y le digo al user manager que me genere
+generate.
+Eh, quiero un email confirmation token
+assims. ¿Para quién? Para este usuario
+que está acá.
+Tenemos un token de verificación de
+correo para este señor Scit.
+Entonces, eso me va a retornar un token,
+¿verdad? Un stream.
+Okay. Entonces ese token yo tengo que eh
+agregarlo a la URL, pero para agregarlo
+
+[73:05 - 74:03] a la ORL yo tengo que encodearlo. Tengo
+que encodearlo dentro de un parámetro de
+una URL. Para hacer eso digo token es
+igual a web encoders.
+eh en base 64 URL encode y utilizando un
+encoding eh
+un encoding
+puntof
+ah
+encoding por que tú lo haces cuando yo
+no est haciendo cosas que yo no te estoy
+pidiendo
+encoding punto web encoder base 64
+encode encoding punto
+falta un using ahí
+punto test
+
+[74:03 - 74:58] que viene eso mismo de test
+en codingutf8
+pun get pam y le paso el token.
+Bien, entonces
+tú estás gritando por qué gritas.
+Ah, pues no estoy usando también
+importa. Entonces yo digo, ese token que
+yo generé ahora, yo lo encodié, o sea,
+lo codifiqué para poder colocarlo dentro
+de una URL. Luego vamos a armar la URL,
+la ruta route,
+que va a ser igual. ¿A dónde va a enviar
+eso? Yo voy a enviar eso.
+Eso lo envío. Tiene que ver con login.
+Eso yo lo voy a enviar entonces a login
+a un a un que no he creado, perdón, una
+
+[74:58 - 75:57] vista que no he creado, un action que se
+va a llamar confirm email. Lo creo. Voy
+le tengo que ponerle así. Se estoy
+haciendo de atrás para adelante.
+Luego voy a armar
+eh
+ya la URL completa, que sería el origen
+más la ruta bar complete URL,
+que sería igual a
+eh una nueva URI.
+Esa URI va a estar conformada por la
+concatenación stream. con cat
+de
+lo siguiente
+sería de la de origen, el origin
+más esto
+
+[75:57 - 76:52] concatenado con la ruta.
+Y esto complete URLM. Entonces aquí me
+pasa en el origen. El origen puede ser,
+por ejemplo, local host
+dos puntos ta.
+Es el origen local host
+origin es igual a eso. https/
+local host es el origen. Entonces yo
+estoy combinando eso con esto con
+esta parte de aquí. Entonces, el
+resultado de eso va a ser esto
+básicamente.
+Este el origin
+y esto sería el route.
+Es yo combino el origin y el route. El
+origin está así en slash, por eso lo
+
+[76:52 - 77:45] pongo aquí. El origin viene así sin
+slash. Lo agrego ahí. Cuando yo combine
+el origin y el el login, de hecho lo
+pudiera hacer. Yo creo que se puede
+hacer si quieren ver lo más claro así.
+La ruta, la combinación del origin,
+el origin, eso y la ruta. Bien.
+Eh, bien. Nice. Entonces, yo tengo la
+URL que voy a poner en el correo. ¿Qué
+le falta su URL? el token, no se lo ha
+agregado el token, lo creé el token,
+pero tengo que ahora agregárselo
+a la URL completa. Para eso ya voy a
+agregar la variable final, que sería el
+verification
+uri,
+
+[77:45 - 78:35] que va a ser igual a
+cómo yo le agrego un parámetro a esa
+ormé. ¿Cómo yo le agrego un parámetro?
+Esa Uri, en este caso un parámetro por
+getando en un dólar que se llama query
+helpers. Query helpers tiene un método
+que se llama addery stream. Entonces le
+digo, mira a este URL que está aquí
+punto
+eh
+porque es una URI.
+Entonces punto tu stream
+a esa que está ahí agrégale
+un parámetro que se va a llamar user ID
+y allí le va a poner el ID del usuario
+que le quiero activar su cuenta
+
+[78:35 - 79:36] y ponle también
+al verification Uri un parámetro que voy
+a llamar
+token, que va a ser el token que yo
+codifiqué. aquí
+y luego retorna verification.
+¿Qué le pasa?
+Se freeó.
+Okay.
+¿Cuál es tu problema aquí?
+This users.
+Ah, yo puedo hacer punto, yo puedo hacer
+punto,
+no sé por qué me dice usess.
+Entiendo. ¿Cuál era lo que era de est?
+Ah, claro, porque aquí un disparate ya
+
+[79:36 - 80:18] verification. Ahora sí,
+claro, porque acá yo le agregué al
+verification ur le agregué este
+parámetro y aquí yo al verification que
+ya le agregué el parámetro le agrego
+otro parámetro. Si utilizo complete URL
+lo que me va a quedar entonces es el
+verification URI, pero con el token nada
+más y yo quiero verification Uri con los
+dos parámetros. Entonces aquí
+verification.
+Okay. Entonces,
+ahora sí, cuando el usuario se cree, le
+va a mandar un hermoso correo con esa
+URL para que pueda activar su usuario.
+Todavía no está listo porque todavía no
+
+[80:18 - 81:18] tengo la lógica de activar usuario, pero
+ya si tengo el token, ya le mando su
+tokens y el ID. Entonces, eso yo lo
+tengo que recibir ahora aquí en este
+mismo servicio y eh activar la cuenta.
+Para activar la cuenta necesito el ID y
+el toque.
+Bien. Eh,
+vamos a hacer la
+activación.
+Entonces
+a este momento le vamos a llamar este
+momento va a retornar un stream
+y le vamos a llamar
+confirm
+.
+
+[81:18 - 82:23] account
+y recip el parámetro un stram que va a
+ser el user id y un stram que va a ser
+el token.
+Bien,
+excelente. Entonces,
+primero vamos a buscar un usuario
+a user manager,
+sorry
+manager punto eh
+find by ids
+y aquí le paso el user ID. Entonces,
+busco el usuario por su ID
+eh
+valido. Si el usuario que me mandaron
+es igual a nul,
+
+[82:23 - 83:14] entonces eh
+return
+mensaje que diga
+no
+que pusimos aquí arriba
+no register.
+user
+us general.
+Eh,
+bien. Entonces,
+lo siguiente es
+confirmar el correo. Entonces, yo para
+eso necesito
+el token. El token
+hay que hacerle el proceso inverso. Yo
+para meter el token en la URL, yo lo
+
+[83:15 - 84:06] encodié. Para entrar el token entre ORL
+lo encodié, lo codifiqué. Ahora son un
+arreglo de bytes básicamente codificado.
+Ahora tengo que descodificarlo aquí.
+Entonces el toque va a ser igual a
+encoding nuevamente la clase encoding.
+Eh, pero tiene un método ahora que se
+llama UTF8.
+Getstam
+y ahora lo decodifico. Digo web encoders
+en vez de encode. ¿Qué fue lo que hice
+aquí? Aquí hice un URL en code. Ahora yo
+voy a hacer un decode. Entonces digo
+base 64 URL
+base 64 decode. Lo decodifico el token,
+el token que mandaron por parámetro.
+
+[84:06 - 85:00] Ahora ya tengo el token original. genero
+el token, lo codifico
+y lo mando al correo. Luego, cuando lo
+recibo desde el correo, lo decodifico
+para tener el token original y ahora lo
+puedo utilizar. para utilizarlo eh para
+confirmar la cuenta, digo, bar result
+a away a
+y user manager
+a user manager punto confirm email
+assins. paso el usuario que quiero
+confirmar y el token de confirmación y
+efectivamente
+si está todo bien. Perdón, el user aquí
+está.
+¿Qué pasa?
+
+[85:00 - 85:57] Ah, que eso puede ser nul. Eh, pues yo
+lo valido aquí es igual a nul. ¿Cuál es
+tu problema?
+Ah, le falta laita aquí. Ven solamente
+estar así.
+Si result
+si todo salió bien,
+vamos a retornar
+un stream que va a decir que todo salió
+bien.
+De lo contrario, vamos a retar un stream
+que dice que no se confirmó.
+Si todo salió bien, vamos a poner que
+diga account
+confirm
+for. Y aquí pongo
+
+[85:58 - 87:08] user punto email
+eh
+you can now use the app.
+Bien, de lo contrario si falló va a
+decir, bueno,
+error
+confirming
+email.
+Pam, pam, pam. Entonces digo user punto
+email
+y ya que no necesario.
+Okay. Entonces sería el proceso de
+confirmación
+de la cuenta.
+Okay.
+Para terminar me falta el delete, el
+
+[87:08 - 88:09] edit,
+el for reset password.
+Mm. Mm. Okay, vamos a continuar
+entonces.
+Okay, entonces vamos
+a hacer la edición, ¿verdad? Va a ser
+parecido al register.
+Ah, vamos a poner aquí edit user
+univo. No lo vamos a mandar correo, así
+que no necesitamos el origin.
+Eh, okay.
+Verificamos si con ese correo con ese
+email.
+Eh, aquí en realidad
+eh va a buscar el usuario por su ID.
+digo, user es igual a a
+
+[88:09 - 89:13] user manager
+pide
+ands
+y le paso save userdo o sa.id ID
+wait.
+Entonces, esto recibe un stream. ¿Qué
+el ID aquí? Eso hay que
+cambiarlo. Eso tiene que ser un stream
+o es un stream ahora, mejor dicho.
+Bien. Entonces, eh
+user
+ahora eh
+otra validación en realidad aquí
+si user es igual a nul, o sea, se
+necesita usar con ese ID, un error y
+poner eh algo como
+
+[89:13 - 90:41] no
+reg
+de lo contrario, si efectivamente un
+usuario con ese ID, lo que tenemos que
+hacer es reemplazar los valores
+user el punto.
+Okay.
+Eh, dej a buscar el user services. Está
+eh
+para el tema de la edición.
+Eh, la contraseña hay que tener en
+cuenta
+y lo del profile.
+Okay, vamos a ver.
+Eh, si se profile image es,
+digo, stream
+
+[90:41 - 91:24] isnul
+stream isnul
+is nul o wirespace.
+Si eso vacío, Word Space significa que
+no mandaron profile image.
+Si no mandaron profile image, eh,
+entonces esto va a quedarse con user
+punto profile imagile
+image.
+Si eso está nulo, vacío, significa que
+no hay. Si quedé con la que tiene, de lo
+contrario que utilice la que mandaron.
+Okay.
+Eh, y me confirm, eso no lo vamos a
+modificar.
+Ah, al menos de que eso haya cambiado,
+
+[91:24 - 92:14] ahí pudiéramos mandarlo verificar
+nuevamente el correo.
+Podemos decir si user punto
+eh
+si user punto eh
+email
+es diferente de safety
+email.
+Eh,
+entonces false,
+de lo contrario, true.
+Bueno, sí, ¿verdad?
+Si user email es igual a email y el
+email está confirmado. Exacto. Igual a
+true. Si el email que tenía es diferente
+al email que mandaron, pues eso va a dar
+
+[92:14 - 93:00] false. El email no está confirmado, pero
+tú cámbiaste el correo.
+Bien. Eh, okay.
+¿Qué más tenemos que hacer aquí? Tenemos
+que tener cuidar con el password porque
+el password no siempre se va a cambiar.
+Entonces, tenemos que ver el day.
+Bien. Entonces, eh,
+update sins, aquí le paso el usuario que
+quiero actualizar
+y que si eso es su sitio.
+El rol se puede cambiar,
+¿no? El rol no se va a poder cambiar. Un
+rol se queda con ese rol. Se hay que
+quitar eso,
+¿eh? Bien, porque si no, déjame ver,
+
+[93:00 - 94:01] porque si no había que hacer
+user manager
+punto los roles.
+el rol. Entonces, tú vas a tener que
+saber el rol que tenía antes para
+quitárselo.
+Eh, queda tan difícil podemos hacerlo.
+Remove el rol. ¿Cuál rol que tenía
+antes? Dice, usar, remuévele el rol que
+tenía antes.
+Ah, pero un listado que se devuelve.
+Entonces, hay que hacer
+eh hay que hacer lo que hicimos en el en
+el login esto.
+Entonces, para editar, buscamos todos
+los roles que tenía ese usuario
+
+[94:01 - 95:07] y luego le removemos por el listado.
+Caramba,
+que tenía, se removemos y le agregamos
+el rol nuevo.
+Excelente.
+Eh, aquí si user
+punto email confirm si no está
+confirmado el correo,
+pues
+qué te digo hay que mandarle esto otra
+vez.
+Origin PC que no, pero sí.
+el origin.
+Okay, entonces.
+Okay, entonces actualizo el usuario. Si
+lo actualizo,
+
+[95:07 - 95:55] eh, le removal que tenía
+y le agrego el nuevo error que se mandó.
+Luego, eh, si no firmado el correo
+porque lo cambiaron, pues hay que
+mandarlo a verificar nuevamente. Bien,
+entonces parte el password.
+Eh, si sa vamos a poner stream.
+is nspace
+si no está vacío nul. Si no está
+eh save dto. Password. Si mandaron un
+password,
+pues hay que actualizarlo,
+pero no es tan fácil atalizar el
+password,
+eh,
+porque para utilizar un password tenemos
+
+[95:55 - 96:45] que usar un método,
+un método que se del user manager
+que se llama reset passwords,
+que ese método tiene que pasar el
+usuario que tú le creizar la contraseña,
+el token token para cambiársela y la
+nueva contraseña.
+Y para esto vamos a tener que generar un
+token aquí, pero eso no tan difícil,
+¿verdad? Entonces decimos bar token es
+igual a user manager pun
+generate
+eh password reset token. Así le paso el
+usuario, genero
+ese token aquí mismo de
+password res
+
+[96:45 - 98:11] tokens. Ese me devuelve
+un token, que es un stream.
+Ah, acá falta la weight.
+Y esto también.
+Excelente. Entonces la wait y le cambia
+la contraseña.
+Y bien,
+me confir, le mando el correo.
+Okay,
+al final si salió todo bien, esto voy a
+debería retornar un
+register, sería un
+ser algo parecido al register, pero
+vamos a ponerle
+edit respondo.
+Lo vi responde,
+
+[98:11 - 100:01] ¿eh?
+Okay.
+Edit responde too.
+Edit responde too.
+Hay que hacer algo prescido al login.
+Okay. Eh,
+aquí si todo salió bien,
+return
+ed response le puse, ¿verdad? Pero hay
+que ponerle los valores.
+¿Cómo se llama el login?
+Espérate,
+tengo R allí arriba, pero sería un nuevo
+R
+actual
+current.
+
+[100:02 - 101:52] Ramos
+un usuario que devuelva todos los datos
+del usuario y hacer lo mismo también
+cuando se cree.
+Sí, lo mismo cuando se cree también
+el register response.
+create y después que se crea
+y return
+return
+spons
+response, okay,
+es el de crear. el registos
+aquí
+llamar R.
+Bien,
+bien, bien, bien, bien, bien, bien,
+
+[101:52 - 102:53] bien, bien.
+Necesario.
+Entonces para editar hacemos todo eso,
+validamos, luegoamos el ID, actualizamos
+la entidad con nuevo,
+mandamos actualizar luego verificamos si
+se cambió remover rol agregamos rol de
+nuevo si cambiaron de rol mandamos la
+confirmación si el correo cambió
+y
+password
+de hecho yo debería
+No lo hago, no sé
+así, pero no es necesario.
+Después lo voy a probar. Voy a intentar
+si cambié la configuración del correo,
+
+[102:53 - 103:59] eh, hacer el logout para que tenga que
+confirmar antes de seguir el aplicativo.
+Pero eso lo vamos a probar ahorita.
+Vamos a dejarlo así por ahora. Entonces,
+tengo el confirm,
+tengo el, el create,
+el sin in logout. Vamos delete,
+register, edit
+account. Por aquí vamos a hacer
+un task, se llama del asins.
+Okay. Entonces para borrar podemos hacer
+la esta validación de aquí.
+Eh,
+sí. Vamos a ver eso ahora. Est recibir
+un in ID id.
+Mentira stream.
+
+[103:59 - 105:26] Entonces hacemos todo el error, no
+importa. Entonces, para borrar decimos a
+user manager punto delete
+y le paso el user que quiero borrar
+y bye by Charlie
+y nice. 11.
+Vamos a crear un
+delete responditivo.
+Es si no me lo voy a dejar error y
+tasca retornar.
+igual a false.
+Okay.
+y return
+return
+y fin.
+Ay, no. Todos los métodos son como el
+
+[105:26 - 106:19] delete, habría una sería muy cómodo
+hacerlo así,
+¿eh? Okay, entonces
+vamos a ver.
+Tengo delete,
+tengo eh
+edit,
+tengo register,
+tengo eh autentics.
+Okay,
+sigamos con implementación.
+Me falta el get all.
+Me falta un get all, un get by ID.
+un get by email, un get by user. Get by
+email, get by user, lo mismo y un get on
+relistado y
+
+[106:19 - 107:20] el reset password.
+Bien, vamos a
+vamos por el kol ahora vamos a precio el
+delite.
+Está el delite.
+Voy a llamar Gor
+user.
+A ver si ningún parámetro o sí
+parámetro.
+Eh, bull que va a ser if active por
+defecto igual a true para que no me
+tenga los usuarios activos. Ese
+parámetro opcional.
+Bien, entonces eh
+bien. ¿Cómo hacemos esto? Para esto
+yo voy a decir var user
+
+[107:20 - 108:22] eh va a ser igual a
+okay,
+se me olvide.
+User manager
+punto tiene un getol user,
+¿no? Tú tienes que decir users
+punto
+select
+y aquí vamos a decir que tú tener un new
+user dto
+bueno. Mentira
+este. Pam pam pam pam. Ahora síar
+un new user DTO
+y aquí metemos mano
+igual a
+sima email
+
+[108:22 - 109:20] ID va a ser igual a S.ID.
+record que está gritando aquí. Está
+bien.
+Eh, inicia el DTO, el ID ahora
+un stream
+.
+stream.
+Bien, entonces
+primero no seamos tan mezquinos.
+last name igual a s punto
+last name
+va ser igual a s punto name.
+Roll va a ser igual a
+un problema
+e
+que
+
+[109:20 - 111:12] asíncrono
+después
+username ser igual a username
+que no cog
+file image va a ser igual a s punto
+profile imagía
+f
+yo tenía o antes en el formulario.
+Okay, no me he dado cuenta.
+F ig a s punto font number
+y falta R r por ahora.
+Vamos a poner igual a vacía por ahora.
+Vemos como
+arreglamos eso. ¿Qué
+Ah, un int. Bueno, ya no va a ser un
+intro, va a ser un stream.
+
+[111:12 - 112:26] Okay.
+Okay, entonces quito esto de aquí bien
+no es necesario
+así
+creo que aquí fue que me
+Ah, claro, esto no síncrono.
+Okay.
+Okay. Entonces,
+contar vacío
+aquí.
+Bien,
+entonces luego digo si if active
+si no más que los activos
+entonces
+eh user va a ser igual a user.Wword
+u punimer
+
+[112:26 - 113:54] w.
+Confirm.
+Ah, ¿qué trae eso? Ahí tengo que
+agregarle eso,
+un bull
+is verified
+ser igual a s pun confirm. Okay,
+entonces is verified
+búscame todos los y est verificado los
+correos.
+Pas. Igual tengo que verificarlo. Okay.
+Tulis listra.
+Mentira,
+mentira.
+Aquí lo voy a hacer.
+Deteo.
+
+[113:54 - 114:58] ¿Cuál es tu problema? CF active. Okay.
+Es igual a true.
+Si is active,
+¿eh? es diferente de n
+y is active
+es igual a tr. Entonces,
+de lo contrario,
+si no es si está nul o no está activo,
+buscar todos los usuarios que no estén
+verificados.
+Bien, perfecto. Va a ser true.
+Nice.
+Tema de los roles. Es un tema con los
+roles porque
+eh
+eso está
+
+[114:59 - 115:34] en
+en este asunto. Eso está en eso hay que
+hacer.
+Déjame
+ver.
+Bien, la única forma de conseguir los
+roles sin complicarnos mucho es haciendo
+algo no tan óptimo, que será cargando
+todos los usuarios en memoria, todos los
+usuarios que haya. Entonces, yo para
+simplificar un poco esa carga, lo que
+voy a hacer es lo siguiente. Yo voy a
+traer todos los roles primero, eh,
+activo, inactivo, lo que sea, y luego a
+ese listado que traiga le voy a agregar
+la información de los roles. Entonces,
+
+[115:34 - 116:28] aquí voy
+list user
+va a ser igual a esto.
+Tengo lista de usuario, memoria como que
+yo le iba a cargar memoria al final.
+Y voy a hacer un forish
+forage bar item y list user.
+Entonces, aquí ahora eh hacemos lo mismo
+que hicimos aquí
+como la lista de roles
+eh
+rist
+le pasamos item, que sería el objeto
+usuario.
+Eh, okay.
+Por aquí uso el detto ya.
+
+[116:28 - 117:48] Interesante. Entonces,
+okay,
+okay.
+Está bien.
+al quarium
+aquí sería email confirmario.
+Eh,
+la niego, que es lo mismo,
+¿eh? Okay. Sa listado de usuarios.
+Okay. Y us por us. Entonces aquí.
+Perfecto.
+Yo voy a tener una lista aquí arriba,
+¿vale? List users dtos
+user d igual a puedo poner esto,
+¿verdad? Sí, lo puedo poner eso si aquí
+adelanteo
+
+[117:48 - 119:08] por aquí no se me olvide. Si aquí
+adelante yo le pongo esto.
+Okay. Entonces
+aquí
+voy a decir punto AD
+y agrego estos señores que están aquí.
+Lo único que aquí voy a decir
+BDS.
+Entonces los roles eh sería
+roll list
+first on
+y retornamos.
+Entonces buscamos el litro de usuario,
+filtramos por confirmado, ¿no? Sacamos
+la lista, luego iteramos esa lista, la
+mapeamos de to y buscamos los rol y ya.
+
+[119:09 - 120:20] Ok. Este sería entonces el get all
+users.
+Vamos a hacer un método similar a este,
+pero va a ser gay user.
+Gay user by
+email.
+Se recibe parámetro un email.
+Vean aquí eh users. Aquí dice users
+long en el get all
+users.
+Entonces aquí va a ser user user manager
+find by email assims.
+Pas el email est retener no unto
+eh bien, no voy a hacer nada de esto.
+Puedo poner reton directamente ya.
+Ah, pero tengo que mapearlo, por eso no
+
+[120:20 - 122:01] pongo irritando de too. Okay, vamos a
+mapearlo a esto.
+user
+DTO es igual a new DTO.
+Se use el DTO
+if user igual a nul.
+Return
+return nul.
+De lo contrario,
+no hacemos el proceso sería user.
+Ahora puedo estar gritando.
+No lo vamos usar
+como
+un user.
+Okay. Y uso
+stream. Okay.
+
+[122:01 - 123:33] Si es igual a N ret. Okay. Que falta la
+weight.
+Okay, ahora vamos por El get by username
+que user by username
+stream username.
+Eso para acá.
+F by name.
+Así es. Okay.
+Okay. Okay. Bien. Entonces, tengo el
+getor user,
+tengo el G user by email y g user by
+username.
+Okay.
+Para terminar el flujo de usuario, vamos
+a repetir todo lo que tenemos. Tenemos
+login, tenemos logout, tenemos registro
+
+[123:33 - 124:19] que tenemos que crear, tenemos edición,
+tenemos borrado, tenemos el fruit
+básico,
+create day delete, aquí tenemos
+para email, para username y el único
+flujo que nos falta para terminar este
+servicio es el de
+el de reset password.
+Eh,
+bien, entonces terminamos este servicio
+que va a ser oferecido al email confirm.
+Vamos a hacer ese y y dejamos el video
+hasta ahí con ese ya
+yo no se voy a servir porque explotado
+durísimo. Tengo que cambiar entonces de
+usuario, por eso ya lo hacé en otro
+
+[124:20 - 125:03] video.
+Mm, todo eso hay que arreglarlo, pero
+está bien. Vamos con el reset password,
+ese flujo.
+Okay, vamos con el flujo final para
+terminar con este servicio, el de reset
+password. Eh,
+para eso son dos pantallas. Una pantalla
+donde el usuario pone
+su username
+y se hace el proceso de enviar el correo
+para su contraseña y otra parte donde se
+resetea la contraseña. Vamos a crear un
+método
+público asíncrono que vamos a llamar
+por
+
+[125:03 - 126:10] password.
+password
+ass
+bien. Entonces, eso va a retornar un for
+password response
+password
+response
+Do.
+Integrar todo es respaw genérico. Tengo
+uno,
+dos rato los demás.
+Este no.
+Tampoco este tampoco este tampoco.
+Tengo dos por ahora como son tan poco,
+no vas a decir
+password respond
+
+[126:10 - 127:27] services.
+Quédelo aquí
+retornar eso
+y eso recibir por parámetro.
+Un email
+va ser un forg password request
+response forg password
+request dto
+response
+request dto bien
+recibir un
+email mentira
+Un username va ser requerido.
+Bien, entonces.
+Okay, entonces vamos allí. Esto va a
+recibir un
+
+[127:27 - 128:18] forgot password request doo
+llamada dto.
+Okay. Entonces,
+eh,
+nice
+descontinue.
+Tenemos el response ahí. Muy bonito.
+Ahora vamos a proceder a buscar el
+usuario por username digo find by name.
+Eso va a ser igual a dto
+punto username efectivamente
+with the username y ahí pongo el
+username sería dtoususername.
+Bien.
+return response. Entonces, si está todo
+bien, sabe qué pasa, si está todo bien,
+
+[128:18 - 129:07] que hay que armar otra ORL, otro
+correíto de esto,
+pero este lo vamos a llamar get en vez
+de getification uri, va a ser get
+eh recepting.
+Bien, entonces vamos a buscar un token,
+pero ahora va a ser un token de R
+password. Generate.
+Generate.
+Reset password.
+Password. Bueno, aparece password reset
+token assims para ese usuario que te van
+a pasar.
+Ener el token. La ORL a que se va a
+enviar va a ser login
+receptword.
+
+[129:07 - 129:55] Bien.
+Eh,
+conigur eso chan
+le paso para password.
+No tengo que pasarle user, así que no
+necesito user, necesito origin, ¿verdad?
+Lo usar para nada. No, creo que no.
+Entonces, te lo puedo quitar
+y esto le voy a llamar
+partetri.
+reset
+uri
+qui a ser igual a complit
+y retorno reseti.
+Entonces,
+ah, si necesito para generarle su
+
+[129:55 - 130:48] cosilla, ¿verdad? Sí, el token.
+Ah, el suave, ¿verdad?
+Tro. Okay, ahora sí. Entonces, get
+reserve password Uri, user manager,
+genero el password, encodeo el token.
+Okay. Eh, generen, luego lo encodeo.
+Armo la ruta, que va a ser esa, la ruta
+que va a mandar en el correo
+y luego
+le paso el token a la ORL, restorno es.
+Okay. Entonces, eso ahora lo vamos a
+llamar aquí en el forgot. Forgot, ¿dónde
+está?
+el forgot aquí. Entonces, este señor de
+acá.
+Eh, bien. Entonces, aquí
+
+[130:48 - 132:04] al SRL va a dar reset
+URI va a ser igual a y le paso entonces
+el usuario
+y el origin. Origin tiene que pasarlo.
+Tiene que pasar el origin. El origin
+vamos a ponerlo ahí mismo en el DTO.
+Okay, tengo el Origin. Entonces
+hay que mandarle el correo.
+Eso es lo que hay que hacer. Mandar el
+correo. ¿Dónde está el correo? Está
+dónde está
+este de aquí.
+Forg. Forgo. Password. Santo Padre.
+¿Dónde está? ¿Dónde está?
+delete,
+entonces vamos a mandar el correo.
+
+[132:04 - 133:06] Eh, el correo lo vamos a sacar del
+usuario que conseguimos con el username.
+Entonces, please,
+le ponemos please
+reset your password. Your your
+password.
+Your password.
+account
+visiting
+disur
+entonces ahí yo le meto reset
+y le pongo reset.
+Okay.
+Actualizar el usuario
+e y desactivarlo. Voy a decir email,
+perdón, user.
+
+[133:06 - 134:03] Confirm.
+Ah, pero después password. Bueno,
+password vuelvo y lo activo,
+¿verdad? Que sí.
+su contraseña. Los activamos al usuario.
+Sí, porque como resulta
+manager
+assins
+y le paso us
+wait.
+Bien, por seguridad lo lo desactivamos,
+eh, y cuando hagamos el TR password se
+lo volemos activar después que me la
+contraseña.
+Bien, entonces
+ya eso debería ser todo lo que es el
+
+[134:03 - 134:58] proceso
+de reseteo.
+Entonces,
+aquí ahora vamos
+a reset password
+password ass.
+el reset.
+Vamos a ponerle que retorne lo mismo, un
+forward for password response, eh, y que
+reciba como parámetro
+un
+res password request. Sí, o sea, es el
+parámetro que voy a recibir. 11
+request.
+Eh,
+reset
+
+[134:58 - 136:01] password request
+para
+la contraseña tengo que recibir
+el username,
+el token, el password y el confirm
+password, el username,
+el token,
+el password.
+Y el
+firm
+password. Confirm password lo necesito.
+Conf password lo necesito. ¿Para qué?
+No necesito,
+no lo necesito.
+Bien, es
+copeta
+
+[136:01 - 137:33] conseguente del millón.
+Mand el correo
+token.
+Más adelante
+porque no sé dónde lo voy a sacar.
+Yo lo puedo sacar del correo yo.
+Sí,
+vamos a ponerlo en el correo, pero yo
+voy a poner el ID.
+Eh, esto va a ser receptor
+aquí. Okay.
+Y aquí
+el ID del usuario. ID token password.
+Okay, entonces
+vamos a
+reset password. Va a recibir un reset
+
+[137:34 - 138:25] password request reset password
+requesto. Okay.
+Eh, bien. Entonces,
+el error. Pam, pam, pam, pam, pam.
+Aquí va a buscar el usuario, pero por su
+ID. Fine by ID. IS. Eso viene el DTO ID.
+Bien, entonces
+eh decimos cuenta estado con este
+usuario que empezar en ID userem mar.
+De lo contrario, si está todo bien,
+siente hiciste un usuario con esa
+cuenta, lo que tenemos que hacer es
+ahora
+obtener el token. Okay. Entonces decimos
+eh
+bar token va a ser igual
+
+[138:25 - 139:19] a del request, ¿no? Perdón, del DTO
+punto eh eso tiene un token, pero ese
+token está codificado, de hecho que
+decodificarlo.
+Es el mismo que hicimos ahorita. Hay que
+hacer encoding
+punto
+vtf
+get strams pam pam pam decimos web
+encoders
+punto
+base 64
+por el encode.
+Y ahí del request para el DTO sacamos el
+toque.
+Eh,
+
+[139:19 - 140:23] ¿cuál es tu problema? Eso es un stream
+que tú estás esperando.
+Ah, no, perdón, que puse encode de code
+en este caso decode. Ahora sí, ahora sí
+decodéalo.
+11. Luego de eso dice result
+manager
+punto password
+sin le paso el user
+eh el token
+y el nuevo password que está en el dto
+punto password. Presentar la contraseña.
+Eh,
+si
+no suscite el resultado.
+La
+
+[140:23 - 141:18] suit
+eh
+error
+respon error true.
+an error
+ocen
+pass
+de lo contrario que todo bien lo que
+tenemos que hacer es a
+al user
+punto email confirm igual a true
+y decimos wait
+user manager
+y retonse
+que no tendría error
+y ya. Entonces,
+
+[141:18 - 142:43] okay,
+voy a poner request.
+Me está chocando de too. Aquí en este
+escenario. Estoy usando response. Vamos
+a usar request response.
+Bien.
+Okay.
+Y entonces
+crear aquí el responde
+o
+respondeo
+o
+sí user responde too.
+11 voy a borrar el delete response para
+unificar
+y voy a borrar el for password respon
+
+[142:43 - 143:47] también unificar
+son diferentes
+aquí
+y aquí lo unifico.
+Perdón, user responde
+bien.
+Okay. Entonces,
+eh este servicio crea ready. Tenemos un
+método para autenticar, para hacer
+login. Ahorita vamos, hay que probar
+todo a ver si funciona. Tenemos un
+método de hacer logoutadout, tenemos el
+método de registrarnos, de crear,
+tenemos el método de editar usuario. Se
+se no sé, se puede dar muchos problemas.
+Muchos cambios y no hemos probado, pero
+
+[143:47 - 144:40] vamos a ver. Tenemos varios escenarios
+ahí.
+Tenemos el de Fego password,
+el de reset password que va junto, el
+delete,
+el que user by email,
+eh, y el user by username, el getor
+user,
+eh, método confirmar la cuenta y los
+métodos privados que son los de las
+URLs.
+Bien, entonces este sería la
+implementación
+de Identity. Falta la integración, falta
+integrar eso al sistema que tenemos
+actualmente. Hay que reemplazar todo
+
+[144:40 - 145:04] esto de user y todo este asunto. Vamos a
+ver cómo todo esto hay que arreglarlo.
+Pasamos en el próximo video.
+Entonces, en el primer video
+configuramos Identity, en este segundo
+video implementamos Identity y en el
+tercer video vamos a integrar Identity
+al aplicativo. Está un poquito largo,
+así que vamos a dejarlo hasta aquí.
