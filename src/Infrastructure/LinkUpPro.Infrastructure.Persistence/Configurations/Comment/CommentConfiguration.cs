@@ -1,4 +1,4 @@
-﻿using LinkUpPro.Domain.Entities.Comment;
+using LinkUpPro.Domain.Entities.Comment;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -25,13 +25,13 @@ namespace LinkUpPro.Infrastructure.Persistence.Configurations.Comment
                    .IsRequired();
 
             // FK → Post
-            builder.HasOne<Domain.Entities.Post.Post>()
-                   .WithMany()
+            builder.HasOne(c => c.Post)
+                   .WithMany(p => p.Comments)
                    .HasForeignKey(c => c.PostId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             // FK → User (autor)
-            builder.HasOne<Domain.Entities.User.User>()
+            builder.HasOne(c => c.User)
                    .WithMany()
                    .HasForeignKey(c => c.UserId)
                    .OnDelete(DeleteBehavior.Restrict);

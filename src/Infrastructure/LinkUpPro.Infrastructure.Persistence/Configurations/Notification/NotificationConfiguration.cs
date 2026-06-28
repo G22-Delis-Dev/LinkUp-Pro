@@ -1,4 +1,4 @@
-﻿using LinkUpPro.Domain.Entities.Notification;
+using LinkUpPro.Domain.Entities.Notification;
 using LinkUpPro.Domain.Entities.Comment;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -38,7 +38,7 @@ namespace LinkUpPro.Infrastructure.Persistence.Configurations.Notification
                    .IsRequired();
 
             // FK → User (recipient)
-            builder.HasOne<Domain.Entities.User.User>()
+            builder.HasOne(n => n.User)
                    .WithMany()
                    .HasForeignKey(n => n.UserId)
                    .OnDelete(DeleteBehavior.Restrict);

@@ -1,4 +1,4 @@
-﻿using LinkUpPro.Domain.Entities.Reaction;
+using LinkUpPro.Domain.Entities.Reaction;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -23,13 +23,13 @@ namespace LinkUpPro.Infrastructure.Persistence.Configurations.Reaction
                    .HasMaxLength(20);
 
             // FK → Post
-            builder.HasOne<Domain.Entities.Post.Post>()
-                   .WithMany()
+            builder.HasOne(r => r.Post)
+                   .WithMany(p => p.Reactions)
                    .HasForeignKey(r => r.PostId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             // FK → User
-            builder.HasOne<Domain.Entities.User.User>()
+            builder.HasOne(r => r.User)
                    .WithMany()
                    .HasForeignKey(r => r.UserId)
                    .OnDelete(DeleteBehavior.Restrict);

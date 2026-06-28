@@ -363,8 +363,11 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Archivos del proyecto
-Evaluacion mini proyecto LinkUp Pro*
-Mini proyecto LinkUp Pro. pdf
+Evaluacion mini proyecto LinkUp Pro.pdf
+Mini proyecto LinkUp Pro.pdf
 **/Storage/README.md
+**/Storage/README.txt
 _docs/GUIA_IMPLEMENTACION_IDENTITY_PROFE.md
-_docs/MASTER_PLAN_EVALUACION_LINKUP_PRO.md
+_docs/MASTER_PLAN_EVALUACION_LINKUP_PRO.md
+_docs/Video*.txt
+
