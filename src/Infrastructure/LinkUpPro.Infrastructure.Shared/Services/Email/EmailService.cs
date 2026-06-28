@@ -6,7 +6,7 @@ using MimeKit;
 
 namespace LinkUpPro.Infrastructure.Shared.Services.Email;
 
-/// Implementación del servicio de correo usando MailKit/SMTP.
+// Implementación del servicio de correo usando MailKit/SMTP.
 public class EmailService : IEmailService
 {
     private readonly EmailSettings _emailSettings;
