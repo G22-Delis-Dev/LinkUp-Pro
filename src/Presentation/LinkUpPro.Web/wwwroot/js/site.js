@@ -1,4 +1,16 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+// Helper global para inicializar tooltips y popovers de Bootstrap si son necesarios
+$(document).ready(function () {
+    // Configuración global para AJAX
+    $.ajaxSetup({
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.error("AJAX Error: ", textStatus, errorThrown);
+        }
+    });
 
-// Write your JavaScript code.
+    // Auto-dismiss alertas después de 5 segundos
+    setTimeout(function() {
+        $('.alert-custom:not(.no-auto-dismiss)').fadeOut('slow', function() {
+            $(this).remove();
+        });
+    }, 5000);
+});

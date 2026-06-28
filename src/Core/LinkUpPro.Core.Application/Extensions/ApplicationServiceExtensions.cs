@@ -27,7 +27,7 @@ public static class ApplicationServiceExtensions
         var assembly = Assembly.GetExecutingAssembly();
 
         // ── AutoMapper & FluentValidation ─────────────────────────────
-        services.AddAutoMapper(assembly);
+        services.AddAutoMapper(config => {}, assembly);
         services.AddValidatorsFromAssembly(assembly);
 
         // ── Identity Services ─────────────────────────────────────────

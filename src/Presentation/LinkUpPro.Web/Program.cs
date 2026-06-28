@@ -46,6 +46,14 @@ builder.Services.AddSession(options =>
 // ── MVC + Filtros Globales ───────────────────────────────────────
 builder.Services.AddControllersWithViews(options =>
 {
+    // Traducciones de validaciones implícitas de ASP.NET Core
+    options.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(_ => "Este campo es requerido.");
+    options.ModelBindingMessageProvider.SetMissingBindRequiredValueAccessor(_ => "Se requiere un valor para este campo.");
+    options.ModelBindingMessageProvider.SetMissingKeyOrValueAccessor(() => "Se requiere un valor.");
+    options.ModelBindingMessageProvider.SetValueMustBeANumberAccessor(_ => "El campo debe ser un número.");
+    options.ModelBindingMessageProvider.SetNonPropertyAttemptedValueIsInvalidAccessor(x => $"El valor '{x}' no es válido.");
+    options.ModelBindingMessageProvider.SetNonPropertyUnknownValueIsInvalidAccessor(() => "El valor provisto no es válido.");
+    
     // Filtro global para validar cuentas activas
     options.Filters.Add<ActiveAccountFilter>();
 });
@@ -84,10 +92,10 @@ app.Use(async (context, next) =>
 {
     context.Response.Headers.Append("Content-Security-Policy",
         "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline'; " +
+        "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; " +
         "style-src 'self' 'unsafe-inline'; " +
         "img-src 'self' data: https:; " +
-        "font-src 'self'; " +
+        "font-src 'self' https://fonts.gstatic.com; " +
         "connect-src 'self'; " +
         "frame-ancestors 'none';");
 

@@ -1,0 +1,51 @@
+@model LinkUpPro.Application.DTOs.User.UpdateProfileDto
+@{
+    ViewData["Title"] = "Editar Perfil";
+    Layout = "_Layout";
+}
+
+<div class="max-w-2xl mx-auto">
+    <div class="card-static">
+        <div class="flex items-center justify-between mb-6 border-b border-card-border/50 pb-4">
+            <h2 class="text-2xl font-bold text-white">Editar Perfil</h2>
+            <a asp-action="View" class="text-text-muted hover:text-white px-3 py-1 rounded-lg hover:bg-white/5 transition-colors text-sm">Cancelar</a>
+        </div>
+
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="bg-red-500/10 border border-red-500/50 text-red-500 rounded-lg p-3 mb-6 text-sm"></div>
+
+            <div class="flex flex-col md:flex-row gap-6 mb-6">
+                <div class="flex-1">
+                    <label asp-for="FirstName" class="label-custom">Nombre</label>
+                    <input asp-for="FirstName" class="input-custom" />
+                    <span asp-validation-for="FirstName" class="text-red-500 text-xs mt-1 block"></span>
+                </div>
+                <div class="flex-1">
+                    <label asp-for="LastName" class="label-custom">Apellido</label>
+                    <input asp-for="LastName" class="input-custom" />
+                    <span asp-validation-for="LastName" class="text-red-500 text-xs mt-1 block"></span>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label asp-for="PhoneNumber" class="label-custom">Teléfono</label>
+                <input asp-for="PhoneNumber" class="input-custom" placeholder="809-555-1234" />
+                <span asp-validation-for="PhoneNumber" class="text-red-500 text-xs mt-1 block"></span>
+            </div>
+            
+            <div class="mb-8">
+                <label class="label-custom">Foto de Perfil</label>
+                <input type="file" name="profilePicture" class="input-custom" accept="image/jpeg,image/png,image/webp" />
+                <p class="text-xs text-text-muted mt-2">Formatos aceptados: JPG, PNG, WEBP. Tamaño máximo recomendado: 2MB.</p>
+            </div>
+
+            <button type="submit" class="btn-primary-custom">
+                Guardar Cambios
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

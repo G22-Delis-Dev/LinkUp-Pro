@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-primary text-text-primary font-sans antialiased;
+  }
+}
+
+@layer components {
+  /* Reutilizables / Glassmorphism */
+  .card-static {
+    @apply bg-card-bg border border-card-border rounded-2xl p-6 backdrop-blur-md shadow-lg;
+  }
+  
+  .input-custom {
+    @apply w-full bg-[#111827] text-white border border-[#374151] rounded-lg px-4 py-3 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors;
+  }
+  
+  .btn-primary-custom {
+    @apply w-full bg-gradient-to-r from-accent to-secondary text-white font-semibold rounded-lg px-4 py-3 hover:opacity-90 focus:ring-2 focus:ring-offset-2 focus:ring-accent transition-all duration-300;
+  }
+
+  .label-custom {
+    @apply block text-sm font-semibold text-text-muted mb-2 tracking-wide;
+  }
+}

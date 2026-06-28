@@ -6,13 +6,8 @@ using LinkUpPro.Infrastructure.Identity.Entities;
 
 namespace LinkUpPro.Web.Filters;
 
-/// <summary>
-/// Filter that validates if authenticated users have active accounts.
-/// Inactive accounts are automatically logged out and redirected to login.
-/// NOTE: This is a placeholder that validates Identity authentication.
-/// Enhanced validation with domain User.IsActive should be implemented
-/// in controllers when domain services are integrated.
-/// </summary>
+// Filtro que valida si los usuarios autenticados tienen cuentas activas.
+// Las cuentas inactivas se cierran sesión automáticamente.
 public class ActiveAccountFilter : IAsyncActionFilter
 {
     private readonly SignInManager<AppUser> _signInManager;

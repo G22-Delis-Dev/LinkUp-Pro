@@ -1,0 +1,83 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Registro";
+    Layout = "_Layout";
+}
+
+<div class="min-h-[80vh] flex items-center justify-center p-4 relative overflow-hidden py-16">
+    <div class="w-full max-w-lg bg-card-bg border border-card-border rounded-2xl p-8 backdrop-blur-md shadow-2xl relative z-10">
+        <h2 class="text-2xl font-bold text-text-primary text-center mb-2">Crear Cuenta</h2>
+        <p class="text-text-muted text-center mb-6">Únete a LinkUp Pro y conecta con amigos</p>
+
+        <form asp-action="Register" method="post">
+            <div asp-validation-summary="ModelOnly" class="bg-red-500/10 border border-red-500/50 text-red-500 rounded-lg p-3 mb-4 text-sm"></div>
+
+            <div class="flex flex-col md:flex-row gap-4 mb-4">
+                <div class="flex-1">
+                    <label asp-for="FirstName" class="label-custom">Nombre</label>
+                    <input asp-for="FirstName" class="input-custom" placeholder="Juan" />
+                    <span asp-validation-for="FirstName" class="text-red-500 text-xs mt-1 block"></span>
+                </div>
+                <div class="flex-1">
+                    <label asp-for="LastName" class="label-custom">Apellido</label>
+                    <input asp-for="LastName" class="input-custom" placeholder="Pérez" />
+                    <span asp-validation-for="LastName" class="text-red-500 text-xs mt-1 block"></span>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Username" class="label-custom">Nombre de Usuario</label>
+                <input asp-for="Username" class="input-custom" placeholder="juanperez123" />
+                <span asp-validation-for="Username" class="text-red-500 text-xs mt-1 block"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Email" class="label-custom">Correo Electrónico</label>
+                <input asp-for="Email" type="email" class="input-custom" placeholder="juan@ejemplo.com" />
+                <span asp-validation-for="Email" class="text-red-500 text-xs mt-1 block"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="PhoneNumber" class="label-custom">Teléfono (Formato DO)</label>
+                <input asp-for="PhoneNumber" class="input-custom" placeholder="809-555-1234" />
+                <span asp-validation-for="PhoneNumber" class="text-red-500 text-xs mt-1 block"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Password" class="label-custom">Contraseña</label>
+                <input asp-for="Password" type="password" class="input-custom" id="passwordInput" placeholder="••••••••" />
+                
+                <div class="mt-2" id="passwordStrengthWrap" style="display: none;">
+                    <div class="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                        <div class="h-full w-0 transition-all duration-300" id="passwordStrengthBar"></div>
+                    </div>
+                    <div class="text-xs mt-1 font-medium" id="passwordStrengthText"></div>
+                </div>
+                
+                <span asp-validation-for="Password" class="text-red-500 text-xs mt-1 block"></span>
+            </div>
+
+            <div class="mb-6">
+                <label asp-for="ConfirmPassword" class="label-custom">Confirmar Contraseña</label>
+                <input asp-for="ConfirmPassword" type="password" class="input-custom" placeholder="••••••••" />
+                <span asp-validation-for="ConfirmPassword" class="text-red-500 text-xs mt-1 block"></span>
+            </div>
+
+            <button type="submit" class="btn-primary-custom">
+                Registrarse
+            </button>
+        </form>
+
+        <div class="flex items-center text-text-muted text-sm my-6 before:content-[''] before:flex-1 before:border-b before:border-card-border before:mr-4 after:content-[''] after:flex-1 after:border-b after:border-card-border after:ml-4">o</div>
+
+        <div class="text-center text-sm flex flex-col gap-2">
+            <span class="text-text-muted">¿Ya tienes cuenta?</span>
+            <a asp-action="Login" class="text-accent hover:text-white font-medium transition-colors">Inicia sesión aquí</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="~/js/passwordStrength.js" asp-append-version="true"></script>
+}
