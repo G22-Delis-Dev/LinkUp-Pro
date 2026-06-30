@@ -1,0 +1,56 @@
+@model LinkUpPro.Application.DTOs.Battleship.BattleshipBoardDto
+
+<div class="card-static p-2 md:p-6 w-full max-w-2xl overflow-x-auto mx-auto relative">
+    <div class="absolute top-2 left-4 z-10 flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]"></span>
+        <span class="text-xs font-bold text-red-400">Impactos</span>
+        
+        <span class="w-3 h-3 rounded-full bg-white ml-2 shadow-[0_0_10px_rgba(255,255,255,0.8)]"></span>
+        <span class="text-xs font-bold text-white">Agua</span>
+    </div>
+
+    <div class="battleship-grid bg-primary border-2 border-white/5 rounded-lg p-2 mt-6">
+        <div class="grid grid-cols-13 gap-1 w-full" style="grid-template-columns: repeat(13, minmax(0, 1fr));">
+            <div class="w-6 h-6 md:w-8 md:h-8"></div>
+            
+            @for (int i = 0; i < 12; i++)
+            {
+                <div class="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center font-bold text-accent/50 text-xs md:text-sm">@(char.ConvertFromUtf32(65 + i))</div>
+            }
+
+            @for (int y = 0; y < 12; y++)
+            {
+                <div class="w-6 h-6 md:w-8 md:h-8 flex items-center justify-center font-bold text-accent/50 text-xs md:text-sm">@(y + 1)</div>
+                
+                @for (int x = 0; x < 12; x++)
+                {
+                    // Buscar si hay ataque
+                    var attack = Model.ReceivedAttacks.FirstOrDefault(a => a.CoordinateX == x && a.CoordinateY == y);
+                    
+                    // Buscar si hay barco (solo para pintar si no queremos ocultar)
+                    var hasShip = false;
+                    foreach(var s in Model.Ships)
+                    {
+                        if(s.Direction == LinkUpPro.Domain.Enums.Battleship.ShipDirection.Horizontal && y == s.StartY && x >= s.StartX && x < s.StartX + (int)s.Size) hasShip = true;
+                        if(s.Direction == LinkUpPro.Domain.Enums.Battleship.ShipDirection.Vertical && x == s.StartX && y >= s.StartY && y < s.StartY + (int)s.Size) hasShip = true;
+                    }
+
+                    string cellClass = "bg-black/20";
+                    if (hasShip && attack == null) cellClass = "bg-accent/30 border-accent/40 border"; // Barco intacto
+                    else if (hasShip && attack != null && attack.IsHit) cellClass = "bg-red-500/80 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]"; // Hit
+                    else if (!hasShip && attack != null) cellClass = "bg-white/80"; // Agua
+
+                    <div class="w-6 h-6 md:w-8 md:h-8 rounded-sm transition-colors @cellClass" title="@($"{(char)(65+x)}{y+1}")">
+                        @if (attack != null)
+                        {
+                            <div class="w-full h-full flex items-center justify-center">
+                                @if(attack.IsHit) { <span class="text-white text-xs font-black">X</span> }
+                                else { <span class="text-black text-xs font-black">•</span> }
+                            </div>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,31 @@
+@model List<LinkUpPro.Application.DTOs.Friendship.FriendshipDto>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-6 text-text-muted">
+        <p>No tienen amigos en común.</p>
+    </div>
+}
+else
+{
+    foreach (var friend in Model)
+    {
+        <div class="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 transition-colors">
+            @if (!string.IsNullOrEmpty(friend.FriendProfilePicture))
+            {
+                <img src="@friend.FriendProfilePicture" alt="@friend.FriendName" class="w-10 h-10 rounded-full object-cover shadow-md" />
+            }
+            else
+            {
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-secondary to-accent flex items-center justify-center shadow-md">
+                    <span class="text-sm font-bold text-white">@friend.FriendName.Substring(0, 1).ToUpper()</span>
+                </div>
+            }
+            <div>
+                <a href="@Url.Action("View", "FriendProfile", new { id = friend.FriendId })" class="font-semibold hover:text-accent transition-colors block">
+                    @friend.FriendName
+                </a>
+            </div>
+        </div>
+    }
+}

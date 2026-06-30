@@ -81,9 +81,9 @@ public class BattleshipSetupService : IBattleshipSetupService
 
         // Lógica súper básica de validación (debería comprobar colisiones y límites de tablero)
         int length = (int)dto.Size;
-        if (dto.Direction == ShipDirection.Horizontal && dto.StartX + length > 10)
+        if (dto.Direction == ShipDirection.Horizontal && dto.StartX + length > 12)
             return ServiceResponse<ShipDto>.Failure("El barco se sale del tablero horizontalmente.");
-        if (dto.Direction == ShipDirection.Vertical && dto.StartY + length > 10)
+        if (dto.Direction == ShipDirection.Vertical && dto.StartY + length > 12)
             return ServiceResponse<ShipDto>.Failure("El barco se sale del tablero verticalmente.");
 
         // TODO: Comprobar colisión con otros barcos de board.Ships...

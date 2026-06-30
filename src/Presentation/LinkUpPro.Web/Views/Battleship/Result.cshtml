@@ -1,0 +1,59 @@
+@{
+    ViewData["Title"] = "Resultado Final - Battleship";
+    var game = ViewBag.Game as LinkUpPro.Application.DTOs.Battleship.BattleshipGameDto;
+    var opponentBoard = ViewBag.OpponentBoard as LinkUpPro.Application.DTOs.Battleship.BattleshipBoardDto;
+    var myBoard = ViewBag.MyBoard as LinkUpPro.Application.DTOs.Battleship.BattleshipBoardDto;
+    var currentUserId = (Guid)ViewBag.CurrentUserId;
+    
+    bool won = game?.WinnerId == currentUserId;
+    bool canceled = game?.Status == LinkUpPro.Domain.Enums.Battleship.GameStatus.Canceled;
+}
+
+<div class="max-w-7xl mx-auto space-y-8">
+    <div class="text-center py-10 relative">
+        <div class="absolute inset-0 flex justify-center items-center opacity-10 pointer-events-none">
+            @if (won && !canceled)
+            {
+                <svg width="400" height="400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            }
+            else if (!won && !canceled)
+            {
+                <svg width="400" height="400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+            }
+        </div>
+        
+        @if (canceled)
+        {
+            <h1 class="text-5xl font-black text-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]">PARTIDA ABANDONADA</h1>
+            <p class="text-text-muted mt-4 text-xl">Alguien se rindió.</p>
+        }
+        else if (won)
+        {
+            <h1 class="text-5xl font-black text-green-400 drop-shadow-[0_0_15px_rgba(74,222,128,0.5)]">¡VICTORIA!</h1>
+            <p class="text-text-muted mt-4 text-xl">Has destruido toda la flota enemiga.</p>
+        }
+        else
+        {
+            <h1 class="text-5xl font-black text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]">DERROTA</h1>
+            <p class="text-text-muted mt-4 text-xl">Tu flota ha sido destruida.</p>
+        }
+        
+        <div class="mt-8">
+            <a asp-controller="BattleshipGameList" asp-action="Index" class="btn-primary-custom px-8 py-3 text-lg">Volver al Menú Naval</a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Mi Tablero -->
+        <div class="card-static">
+            <h3 class="text-2xl font-bold text-center mb-6">Mi Flota</h3>
+            <partial name="~/Views/Battleship/_MyBoard.cshtml" model="myBoard" />
+        </div>
+
+        <!-- Tablero Oponente -->
+        <div class="card-static">
+            <h3 class="text-2xl font-bold text-center mb-6 text-red-400">Flota Enemiga (Revelada)</h3>
+            <partial name="~/Views/Battleship/_MyBoard.cshtml" model="opponentBoard" />
+        </div>
+    </div>
+</div>

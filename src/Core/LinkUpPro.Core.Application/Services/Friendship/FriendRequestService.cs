@@ -134,4 +134,19 @@ public class FriendRequestService : IFriendRequestService
 
         return BaseResult.Ok();
     }
+
+    public async Task<BaseResult> HideRequestAsync(Guid requestId, Guid userId)
+    {
+        var request = await _requestRepository.GetByIdAsync(requestId);
+        if (request == null) return BaseResult.Fail("Solicitud no encontrada.");
+        
+        // Solo se puede ocultar si se es parte de la solicitud
+        if (request.SenderId != userId && request.ReceiverId != userId) 
+            return BaseResult.Fail("No autorizado.");
+
+        // Como no hay eliminación lógica en la entidad, hacemos eliminación física
+        await _requestRepository.DeleteAsync(request);
+
+        return BaseResult.Ok();
+    }
 }

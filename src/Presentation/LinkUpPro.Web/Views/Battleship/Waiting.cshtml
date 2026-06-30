@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "Esperando al Oponente - Battleship";
+    var gameId = ViewBag.GameId;
+}
+
+<div class="max-w-2xl mx-auto text-center mt-20">
+    <div class="card-static py-16 flex flex-col items-center">
+        <!-- Radar Animation -->
+        <div class="relative w-32 h-32 mb-8">
+            <div class="absolute inset-0 rounded-full border-2 border-accent/20"></div>
+            <div class="absolute inset-4 rounded-full border-2 border-accent/40"></div>
+            <div class="absolute inset-8 rounded-full border-2 border-accent/60"></div>
+            <div class="absolute inset-1/2 w-full h-[2px] bg-gradient-to-r from-transparent to-accent origin-left animate-[spin_3s_linear_infinite]" style="top: 50%; left: 50%;"></div>
+            <div class="absolute inset-0 rounded-full bg-accent/5 backdrop-blur-[1px]"></div>
+            
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-accent rounded-full shadow-[0_0_15px_rgba(0,212,255,1)]"></div>
+        </div>
+
+        <h1 class="text-3xl font-bold tracking-tight mb-4">Esperando al oponente...</h1>
+        <p class="text-text-muted mb-8 max-w-md">
+            Has colocado tus barcos correctamente. La batalla comenzará tan pronto como tu oponente termine de posicionar su flota.
+        </p>
+
+        <a href="@Url.Action("Setup", "BattleshipSetup", new { gameId = gameId })" class="btn-primary-custom px-8 flex items-center gap-2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-9.21l-5.6 5.6"></path>
+            </svg>
+            Refrescar Estado
+        </a>
+        
+        <p class="text-xs text-text-muted mt-6 uppercase tracking-wider">Modo de refresco manual</p>
+    </div>
+</div>

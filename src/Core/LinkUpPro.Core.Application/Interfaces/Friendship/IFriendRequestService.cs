@@ -9,4 +9,5 @@ public interface IFriendRequestService
     Task<BaseResult> AcceptRequestAsync(Guid requestId, Guid userId);
     Task<BaseResult> RejectRequestAsync(Guid requestId, Guid userId);
     Task<BaseResult> CancelRequestAsync(Guid requestId, Guid userId);
+    Task<BaseResult> HideRequestAsync(Guid requestId, Guid userId);
 }

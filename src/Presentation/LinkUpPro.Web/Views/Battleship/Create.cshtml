@@ -1,0 +1,48 @@
+@model LinkUpPro.Application.ViewModels.Battleship.CreateGameViewModel
+@{
+    ViewData["Title"] = "Crear Partida de Battleship";
+}
+
+<div class="max-w-2xl mx-auto">
+    <div class="card-static">
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/20 text-accent mb-4">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold tracking-tight">Nueva Partida</h1>
+            <p class="text-text-muted mt-2">Ingresa el ID del amigo al que deseas retar.</p>
+        </div>
+
+        <form asp-controller="BattleshipGameCreate" asp-action="Create" method="post" class="space-y-6">
+            <div asp-validation-summary="All" class="text-red-400 text-sm bg-red-400/10 p-3 rounded-lg hidden"></div>
+
+            <div>
+                <label asp-for="OpponentId" class="label-custom">ID del Oponente (Guid)</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-muted">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <input asp-for="OpponentId" class="input-custom pl-10" placeholder="Ej: 550e8400-e29b-41d4-a716-446655440000" />
+                </div>
+                <span asp-validation-for="OpponentId" class="text-red-400 text-xs mt-1 block"></span>
+                <p class="text-xs text-text-muted mt-2">Debe ser un usuario con el que tengas amistad activa y sin partidas en curso.</p>
+            </div>
+
+            <div class="flex gap-4 pt-4">
+                <a asp-controller="BattleshipGameList" asp-action="Index" class="px-6 py-3 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-lg transition-colors flex-1 text-center">
+                    Cancelar
+                </a>
+                <button type="submit" class="btn-primary-custom flex-1 flex justify-center items-center gap-2">
+                    Crear Partida
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

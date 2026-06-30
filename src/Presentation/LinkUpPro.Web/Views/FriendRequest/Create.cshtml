@@ -1,0 +1,37 @@
+@model LinkUpPro.Application.ViewModels.Friendship.SendFriendRequestViewModel
+@{
+    ViewData["Title"] = "Nueva Solicitud de Amistad";
+}
+
+<div class="max-w-2xl mx-auto">
+    <div class="card-static">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-accent to-secondary">Añadir un amigo</h1>
+            <p class="text-text-muted mt-2">Ingresa el ID del usuario para enviarle una solicitud de amistad.</p>
+        </div>
+
+        <form asp-controller="FriendRequestSend" asp-action="Send" method="post" class="space-y-6">
+            <div asp-validation-summary="All" class="text-red-400 text-sm bg-red-400/10 p-3 rounded-lg hidden"></div>
+
+            <div>
+                <label asp-for="ReceiverId" class="label-custom">ID del Usuario (Guid)</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-muted">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <input asp-for="ReceiverId" class="input-custom pl-10" placeholder="Ej: 550e8400-e29b-41d4-a716-446655440000" />
+                </div>
+                <span asp-validation-for="ReceiverId" class="text-red-400 text-xs mt-1 block"></span>
+                <p class="text-xs text-text-muted mt-2">Nota: En una implementación real con UserService, aquí se listaría a los usuarios con radio buttons.</p>
+            </div>
+
+            <button type="submit" class="btn-primary-custom flex justify-center items-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                Enviar Solicitud
+            </button>
+        </form>
+    </div>
+</div>
