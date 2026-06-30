@@ -53,7 +53,7 @@ public class CommentReplyController : Controller
         if (result.Success)
             TempData["Success"] = "Respuesta eliminada.";
         else
-            TempData["Error"] = result.Errors.FirstOrDefault() ?? "Error";
+            TempData["Error"] = result.Errors.FirstOrDefault() ?? "Ocurrió un error al eliminar la respuesta.";
             
         return Redirect(string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl);
     }

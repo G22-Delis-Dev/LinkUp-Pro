@@ -53,7 +53,7 @@ public class CommentController : Controller
         if (result.Success)
             TempData["Success"] = "Comentario eliminado.";
         else
-            TempData["Error"] = result.Errors.FirstOrDefault() ?? "Error";
+            TempData["Error"] = result.Errors.FirstOrDefault() ?? "Ocurrió un error al eliminar el comentario.";
             
         return Redirect(string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl);
     }

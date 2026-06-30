@@ -28,10 +28,19 @@ public class AuthController : Controller
     }
 
     [HttpGet]
-    public IActionResult Login(string? returnUrl = null)
+    public IActionResult Login(string? returnUrl = null, string? message = null)
     {
         if (User.Identity != null && User.Identity.IsAuthenticated)
             return RedirectToAction("Index", "Home");
+
+        if (!string.IsNullOrEmpty(message))
+        {
+            TempData["Error"] = message;
+        }
+        else if (!string.IsNullOrEmpty(returnUrl))
+        {
+            TempData["Info"] = "Debe iniciar sesión para acceder a esta sección.";
+        }
 
         ViewData["ReturnUrl"] = returnUrl;
         return View(new LoginViewModel());
