@@ -1095,3 +1095,20 @@ a:hover {
 .align-center { align-items: center; }
 .justify-between { justify-content: space-between; }
 .w-full { width: 100%; }
+/* Fix Edge/Chrome Password Reveal Eye Visibility in Dark Theme */
+input[type='password']::-ms-reveal,
+input[type='password']::-webkit-reveal {
+    filter: invert(1);
+    opacity: 0.7;
+    cursor: pointer;
+}
+input[type='password']::-ms-reveal:hover,
+input[type='password']::-webkit-reveal:hover {
+    opacity: 1;
+}
+
+/* Hide native Edge/Chrome password reveal */
+input[type='password']::-ms-reveal,
+input[type='password']::-webkit-reveal {
+    display: none !important;
+}

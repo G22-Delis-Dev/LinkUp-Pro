@@ -93,7 +93,8 @@ public class AuthController : Controller
             Email = model.Email,
             PhoneNumber = model.PhoneNumber,
             Password = model.Password,
-            ConfirmPassword = model.ConfirmPassword
+            ConfirmPassword = model.ConfirmPassword,
+            Origin = $"{Request.Scheme}://{Request.Host.Value}"
         };
 
         var result = await _registerService.RegisterAsync(dto);
@@ -133,7 +134,8 @@ public class AuthController : Controller
     {
         // En una app real, si sólo tenemos username del form, buscaríamos el email. 
         // Si el servicio acepta email, lo pasamos (aquí lo mapeamos simple a username porque a veces Auth los unifica).
-        var result = await _activationService.ResendActivationAsync(username);
+        var origin = $"{Request.Scheme}://{Request.Host.Value}";
+        var result = await _activationService.ResendActivationAsync(username, origin);
 
         if (!result.HasError)
             TempData["Success"] = "Se ha reenviado el enlace de activación a su correo electrónico.";
@@ -154,7 +156,7 @@ public class AuthController : Controller
     {
         if (!ModelState.IsValid) return View(model);
 
-        var dto = new ForgotPasswordDto { Email = model.Email };
+        var dto = new ForgotPasswordDto { Email = model.Email, Origin = $"{Request.Scheme}://{Request.Host.Value}" };
         var result = await _passwordResetService.RequestResetAsync(dto);
 
         TempData["Info"] = "Si el correo existe en nuestro sistema, recibirá un enlace para restablecer su contraseña.";

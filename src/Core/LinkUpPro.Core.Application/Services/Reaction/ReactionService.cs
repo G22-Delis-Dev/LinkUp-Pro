@@ -108,4 +108,20 @@ public class ReactionService : IReactionService
 
         return reactions.ToDictionary(r => r.Type, r => r.Count);
     }
+
+    public async Task<ReactionCountsResult> GetReactionCountsAsync(Guid postId, Guid userId)
+    {
+        var reactions = await _reactionRepository.Query()
+            .Where(r => r.PostId == postId)
+            .ToListAsync();
+
+        var userReaction = reactions.FirstOrDefault(r => r.UserId == userId);
+
+        return new ReactionCountsResult
+        {
+            LikeCount = reactions.Count(r => r.Type == ReactionType.Like),
+            DislikeCount = reactions.Count(r => r.Type == ReactionType.Dislike),
+            UserReaction = userReaction != null ? (int)userReaction.Type : -1
+        };
+    }
 }

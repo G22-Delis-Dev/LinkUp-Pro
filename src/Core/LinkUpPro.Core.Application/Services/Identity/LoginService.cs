@@ -27,6 +27,7 @@ public class LoginService : ILoginService
     {
         // 1. Buscar usuario por username (case-insensitive via Identity)
         var appUser = await _userManager.FindByNameAsync(dto.Username);
+        
         if (appUser == null)
         {
             return ServiceResponse<string>.Failure(

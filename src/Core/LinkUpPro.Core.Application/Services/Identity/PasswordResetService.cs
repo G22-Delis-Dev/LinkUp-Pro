@@ -41,7 +41,7 @@ public class PasswordResetService : IPasswordResetService
         var token = await _userManager.GeneratePasswordResetTokenAsync(appUser);
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-        var resetUrl = $"/Auth/ResetPassword?email={appUser.Email}&token={encodedToken}";
+        var resetUrl = $"{dto.Origin}/Auth/ResetPassword?email={appUser.Email}&token={encodedToken}";
 
         try
         {

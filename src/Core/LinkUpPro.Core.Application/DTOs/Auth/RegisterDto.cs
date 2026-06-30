@@ -9,4 +9,5 @@ public class RegisterDto
     public string PhoneNumber { get; set; } = null!;
     public string Password { get; set; } = null!;
     public string ConfirmPassword { get; set; } = null!;
+    public string Origin { get; set; } = string.Empty;
 }

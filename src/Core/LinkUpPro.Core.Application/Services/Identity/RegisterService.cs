@@ -86,7 +86,7 @@ public class RegisterService : IRegisterService
 
         // La URL de activación se construirá en el controlador con Url.Action
         // Aquí solo enviamos el correo con el token codificado
-        var activationUrl = $"/Auth/ActivateAccount?userId={appUser.Id}&token={encodedToken}";
+        var activationUrl = $"{dto.Origin}/Auth/Activate?userId={appUser.Id}&token={encodedToken}";
 
         try
         {

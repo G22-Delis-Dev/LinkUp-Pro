@@ -65,7 +65,7 @@ public class AccountActivationService : IAccountActivationService
         });
     }
 
-    public async Task<ServiceResponse<string>> ResendActivationAsync(string email)
+    public async Task<ServiceResponse<string>> ResendActivationAsync(string email, string origin)
     {
         // Mensaje genérico para no revelar si la cuenta existe
         const string genericMessage = "Si el correo está registrado, recibirá un nuevo enlace de activación.";
@@ -87,7 +87,7 @@ public class AccountActivationService : IAccountActivationService
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(appUser);
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-        var activationUrl = $"/Auth/ActivateAccount?userId={appUser.Id}&token={encodedToken}";
+        var activationUrl = $"{origin}/Auth/Activate?userId={appUser.Id}&token={encodedToken}";
 
         try
         {

@@ -30,7 +30,20 @@ public class ReactionController : Controller
         };
         
         var result = await _reactionService.ToggleReactionAsync(dto);
+
+        if (result.HasError)
+        {
+            return Json(new { success = false, error = result.Error });
+        }
+
+        // Obtener conteos actualizados
+        var counts = await _reactionService.GetReactionCountsAsync(model.PostId, currentUserId);
         
-        return Json(new { success = !result.HasError, error = result.Error });
+        return Json(new { 
+            success = true, 
+            likeCount = counts.LikeCount, 
+            dislikeCount = counts.DislikeCount,
+            userReaction = counts.UserReaction  // -1 = ninguna, 0 = Like, 1 = Dislike
+        });
     }
 }

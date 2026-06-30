@@ -93,10 +93,11 @@ app.Use(async (context, next) =>
     context.Response.Headers.Append("Content-Security-Policy",
         "default-src 'self'; " +
         "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; " +
-        "style-src 'self' 'unsafe-inline'; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
         "img-src 'self' data: https:; " +
         "font-src 'self' https://fonts.gstatic.com; " +
         "connect-src 'self'; " +
+        "frame-src https://www.youtube.com https://youtube.com; " +
         "frame-ancestors 'none';");
 
     context.Response.Headers.Append("X-Content-Type-Options", "nosniff");

@@ -90,7 +90,7 @@ public class PostQueryService : IPostQueryService
                 YouTubeVideoId = video?.VideoPath,
                 CommentCount = p.Comments.Count,
                 LikeCount = p.Reactions.Count(r => r.Type == Domain.Enums.Reaction.ReactionType.Like),
-                DislikeCount = p.Reactions.Count(r => r.Type != Domain.Enums.Reaction.ReactionType.Like),
+                DislikeCount = p.Reactions.Count(r => r.Type == Domain.Enums.Reaction.ReactionType.Dislike),
                 CreatedAt = p.CreatedAt,
                 LastModifiedAt = p.LastModifiedAt
             };
@@ -140,7 +140,7 @@ public class PostQueryService : IPostQueryService
             YouTubeVideoId = video?.VideoPath,
             CommentCount = post.Comments.Count,
             LikeCount = post.Reactions.Count(r => r.Type == Domain.Enums.Reaction.ReactionType.Like),
-            DislikeCount = post.Reactions.Count(r => r.Type != Domain.Enums.Reaction.ReactionType.Like),
+            DislikeCount = post.Reactions.Count(r => r.Type == Domain.Enums.Reaction.ReactionType.Dislike),
             CreatedAt = post.CreatedAt,
             LastModifiedAt = post.LastModifiedAt
         };
