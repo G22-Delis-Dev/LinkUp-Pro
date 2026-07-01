@@ -1,4 +1,4 @@
-using LinkUpPro.Application.Interfaces.Battleship;
+﻿using LinkUpPro.Application.Interfaces.Battleship;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,15 +21,18 @@ public class BattleshipMyBoardController : Controller
     // Retorna partial view con el tablero propio actualizado
     public async Task<IActionResult> Board(Guid gameId)
     {
-        var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
-        
-        var board = await _setupService.GetBoardAsync(gameId, currentUserId);
-        var game = await _gameService.GetGameAsync(gameId);
+        var currentUserId = GetCurrentUserId();
 
-        if (board.HasError || game.HasError)
+        var boardResult = await _setupService.GetBoardAsync(gameId, currentUserId);
+        var gameResult = await _gameService.GetGameAsync(gameId);
+
+        if (boardResult.HasError || gameResult.HasError)
             return NotFound();
 
-        ViewBag.Game = game.Data;
-        return PartialView("~/Views/Battleship/_MyBoard.cshtml", board.Data);
+        ViewBag.Game = gameResult.Data;
+        return PartialView("~/Views/Battleship/_MyBoard.cshtml", boardResult.Data);
     }
+
+    private Guid GetCurrentUserId()
+        => Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
 }

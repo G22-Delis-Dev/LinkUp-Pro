@@ -1,10 +1,13 @@
 using LinkUpPro.Application.Common;
 using LinkUpPro.Application.DTOs.User;
 using LinkUpPro.Application.Interfaces.User;
+using LinkUpPro.Domain.Enums.Friendship;
+using LinkUpPro.Domain.Interfaces.Repositories.Friendship;
 using LinkUpPro.Domain.Interfaces.Repositories.User;
 using LinkUpPro.Infrastructure.Identity.Entities;
 using LinkUpPro.Infrastructure.Shared.Services.Storage;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace LinkUpPro.Application.Services.User;
 
@@ -14,17 +17,23 @@ public class UserService : IUserService
     private readonly UserManager<AppUser> _userManager;
     private readonly SignInManager<AppUser> _signInManager;
     private readonly IImageStorageService _imageStorage;
+    private readonly IFriendshipRepository _friendshipRepository;
+    private readonly IFriendRequestRepository _friendRequestRepository;
 
     public UserService(
         IUserRepository userRepository,
         UserManager<AppUser> userManager,
         SignInManager<AppUser> signInManager,
-        IImageStorageService imageStorage)
+        IImageStorageService imageStorage,
+        IFriendshipRepository friendshipRepository,
+        IFriendRequestRepository friendRequestRepository)
     {
         _userRepository = userRepository;
         _userManager = userManager;
         _signInManager = signInManager;
         _imageStorage = imageStorage;
+        _friendshipRepository = friendshipRepository;
+        _friendRequestRepository = friendRequestRepository;
     }
 
     public async Task<ServiceResponse<UserProfileDto>> GetProfileAsync(Guid userId)
@@ -162,5 +171,45 @@ public class UserService : IUserService
         await _signInManager.RefreshSignInAsync(appUser);
 
         return BaseResult.Ok();
+    }
+
+    public async Task<List<UserSearchDto>> SearchUsersAsync(
+        string query, Guid currentUserId, bool excludeFriendsAndPending = false)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+            return new List<UserSearchDto>();
+
+        var users = await _userRepository.SearchActiveUsersAsync(query, currentUserId);
+
+        IEnumerable<Guid> excludedIds = Enumerable.Empty<Guid>();
+
+        if (excludeFriendsAndPending)
+        {
+            // Ids de amigos activos
+            var friends = await _friendshipRepository.FindAsync(f =>
+                (f.UserId == currentUserId || f.FriendId == currentUserId) &&
+                f.Status == FriendshipStatus.Active);
+            var friendIds = friends.Select(f => f.UserId == currentUserId ? f.FriendId : f.UserId);
+
+            // Ids con solicitud pendiente (enviadas o recibidas)
+            var pending = await _friendRequestRepository.FindAsync(r =>
+                (r.SenderId == currentUserId || r.ReceiverId == currentUserId) &&
+                r.Status == LinkUpPro.Domain.Enums.Friendship.FriendRequestStatus.Pending);
+            var pendingIds = pending.Select(r => r.SenderId == currentUserId ? r.ReceiverId : r.SenderId);
+
+            excludedIds = friendIds.Concat(pendingIds).Distinct();
+        }
+
+        return users
+            .Where(u => !excludedIds.Contains(u.Id))
+            .Select(u => new UserSearchDto
+            {
+                Id = u.Id,
+                FullName = $"{u.FirstName} {u.LastName}",
+                ProfilePictureUrl = !string.IsNullOrEmpty(u.ProfilePicturePath)
+                    ? _imageStorage.GetImageUrl(u.ProfilePicturePath)
+                    : null
+            })
+            .ToList();
     }
 }

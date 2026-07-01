@@ -70,7 +70,8 @@ public class AccountActivationService : IAccountActivationService
         // Mensaje genérico para no revelar si la cuenta existe
         const string genericMessage = "Si el correo está registrado, recibirá un nuevo enlace de activación.";
 
-        var appUser = await _userManager.FindByEmailAsync(email);
+        var appUser = await _userManager.FindByEmailAsync(email)
+            ?? await _userManager.FindByNameAsync(email);
         if (appUser == null)
         {
             return ServiceResponse<string>.Success(genericMessage);

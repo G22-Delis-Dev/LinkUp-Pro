@@ -8,4 +8,5 @@ public interface IBattleshipSetupService
     Task<ServiceResponse<ShipDto>> PlaceShipAsync(PlaceShipDto dto);
     Task<ServiceResponse<BattleshipBoardDto>> GetBoardAsync(Guid gameId, Guid playerId);
     Task<BaseResult> ConfirmSetupAsync(Guid gameId, Guid playerId);
+    Task<bool> BothPlayersReadyAsync(Guid gameId);
 }

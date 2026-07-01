@@ -78,7 +78,7 @@
                             }
                             else
                             {
-                                <a href="@Url.Action("Board", "BattleshipAttack", new { gameId = game.Id })" class="btn-primary-custom text-sm flex-1 text-center">Ir a Batalla</a>
+                                <a href="@Url.Action("Index", "BattleshipAttack", new { gameId = game.Id })" class="btn-primary-custom text-sm flex-1 text-center">Ir a Batalla</a>
                             }
                             
                             <form asp-controller="BattleshipSurrender" asp-action="Surrender" method="post" onsubmit="return confirm('¿Estás seguro que deseas rendirte? Perderás la partida.');">

@@ -39,14 +39,15 @@ public class PlaceShipViewModelValidator : AbstractValidator<PlaceShipViewModel>
 
         int length = (int)model.Size;
 
-        if (model.Direction == ShipDirection.Horizontal)
+        // Validar límites según dirección (tablero 12x12)
+        return model.Direction switch
         {
-            return (model.StartX + length) <= 10;
-        }
-        else // Vertical
-        {
-            return (model.StartY + length) <= 10;
-        }
+            ShipDirection.Right => (model.StartX + length) <= 12,
+            ShipDirection.Left => (model.StartX - length + 1) >= 0,
+            ShipDirection.Down => (model.StartY + length) <= 12,
+            ShipDirection.Up => (model.StartY - length + 1) >= 0,
+            _ => false
+        };
     }
 }
 

@@ -13,32 +13,45 @@ public class FriendRequestSendController : Controller
     private readonly IFriendRequestService _requestService;
     private readonly IFriendRequestQueryService _queryService;
     private readonly IFriendshipService _friendshipService;
-    // Asumiendo que IUserRepository está disponible o un método para listar usuarios.
-    // Como no tenemos un IUserRepository expuesto en Application para listar a todos,
-    // es posible que tengamos que saltar esta regla de "mostrar usuarios sin amistad"
-    // o el frontend tendrá un input manual, o el PostController muestra perfiles.
-    // La rúbrica dice "Muestra usuarios activos sin amistad ni solicitud pendiente."
-    // Para simplificar, asumiremos que IUserService no tiene GetAll, pero si fuera necesario
-    // se buscaría por nombre. Por ahora pasaremos una lista vacía y lo dejaremos como TODO.
+    private readonly IUserService _userService;
 
     public FriendRequestSendController(
         IFriendRequestService requestService,
         IFriendRequestQueryService queryService,
-        IFriendshipService friendshipService)
+        IFriendshipService friendshipService,
+        IUserService userService)
     {
         _requestService = requestService;
         _queryService = queryService;
         _friendshipService = friendshipService;
+        _userService = userService;
     }
 
     [HttpGet]
     public IActionResult Create()
     {
-        // En un caso real, aquí cargaríamos los usuarios que no son amigos ni tienen solicitud.
-        // Dado que no tenemos un UserService.GetAllUsers(), el usuario podría buscar por ID
-        // o ver los usuarios en las publicaciones. 
-        // Solo renderizaremos la vista.
         return View("~/Views/FriendRequest/Create.cshtml");
+    }
+
+    /// <summary>
+    /// Endpoint AJAX para búsqueda global de usuarios en tiempo real.
+    /// GET /FriendRequestSend/SearchUsers?q=texto
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> SearchUsers(string q)
+    {
+        if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+            return Json(new List<object>());
+
+        var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
+        var results = await _userService.SearchUsersAsync(q, currentUserId, excludeFriendsAndPending: true);
+
+        return Json(results.Select(u => new
+        {
+            id = u.Id,
+            fullName = u.FullName,
+            profilePictureUrl = u.ProfilePictureUrl
+        }));
     }
 
     [HttpPost]

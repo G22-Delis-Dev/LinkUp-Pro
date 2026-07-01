@@ -10,6 +10,7 @@ public class BattleshipGame : AuditableEntity<Guid>
     public GameStatus Status { get; set; } = GameStatus.WaitingForOpponent;
     public GameResult Result { get; set; } = GameResult.None;
     public Guid CurrentTurnPlayerId { get; set; }
+    public DateTime? TurnStartedAt { get; set; }
 
     public User.User Player1 { get; set; } = null!;
     public User.User Player2 { get; set; } = null!;

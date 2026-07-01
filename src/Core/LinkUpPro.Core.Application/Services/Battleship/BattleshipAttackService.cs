@@ -1,165 +1,146 @@
+﻿using AutoMapper;
 using LinkUpPro.Application.Common;
 using LinkUpPro.Application.DTOs.Battleship;
 using LinkUpPro.Application.Interfaces.Battleship;
-using LinkUpPro.Application.Interfaces.Notification;
+using LinkUpPro.Domain.Entities.Battleship;
 using LinkUpPro.Domain.Enums.Battleship;
-using LinkUpPro.Domain.Enums.Notification;
+using LinkUpPro.Domain.Exceptions;
 using LinkUpPro.Domain.Interfaces.Repositories.Battleship;
-using Microsoft.EntityFrameworkCore;
+using LinkUpPro.Domain.Rules.Battleship.Attack;
+using LinkUpPro.Domain.Rules.Battleship.Game;
 
 namespace LinkUpPro.Application.Services.Battleship;
 
 public class BattleshipAttackService : IBattleshipAttackService
 {
-    private readonly IBattleshipGameRepository _gameRepository;
-    private readonly IBattleshipBoardRepository _boardRepository;
-    private readonly IBattleshipAttackRepository _attackRepository;
-    private readonly IBattleshipShipRepository _shipRepository;
-    private readonly INotificationDispatchService _notificationDispatch;
+    private readonly IBattleshipGameRepository _gameRepo;
+    private readonly IBattleshipBoardRepository _boardRepo;
+    private readonly IBattleshipShipRepository _shipRepo;
+    private readonly IBattleshipAttackRepository _attackRepo;
+    private readonly IMapper _mapper;
 
     public BattleshipAttackService(
-        IBattleshipGameRepository gameRepository,
-        IBattleshipBoardRepository boardRepository,
-        IBattleshipAttackRepository attackRepository,
-        IBattleshipShipRepository shipRepository,
-        INotificationDispatchService notificationDispatch)
+        IBattleshipGameRepository gameRepo,
+        IBattleshipBoardRepository boardRepo,
+        IBattleshipShipRepository shipRepo,
+        IBattleshipAttackRepository attackRepo,
+        IMapper mapper)
     {
-        _gameRepository = gameRepository;
-        _boardRepository = boardRepository;
-        _attackRepository = attackRepository;
-        _shipRepository = shipRepository;
-        _notificationDispatch = notificationDispatch;
+        _gameRepo = gameRepo;
+        _boardRepo = boardRepo;
+        _shipRepo = shipRepo;
+        _attackRepo = attackRepo;
+        _mapper = mapper;
     }
 
-    public async Task<ServiceResponse<AttackResultDto>> AttackAsync(AttackDto dto)
+    public async Task<ServiceResponse<BattleshipBoardDto>> GetOpponentBoardAsync(Guid gameId, Guid currentUserId)
     {
-        var game = await _gameRepository.GetByIdAsync(dto.GameId);
-        if (game == null || game.Status != GameStatus.InProgress)
-            return ServiceResponse<AttackResultDto>.Failure("Juego no válido o no está en progreso.");
+        var game = await _gameRepo.GetWithBoardsAsync(gameId);
+        if (game == null)
+            return ServiceResponse<BattleshipBoardDto>.Failure("La partida no existe.");
 
-        if (game.CurrentTurnPlayerId != dto.AttackerPlayerId)
-            return ServiceResponse<AttackResultDto>.Failure("No es tu turno.");
+        var opponentId = currentUserId == game.Player1Id ? game.Player2Id : game.Player1Id;
 
-        var opponentId = game.Player1Id == dto.AttackerPlayerId ? game.Player2Id : game.Player1Id;
+        var opponentBoard = await _boardRepo.GetByGameAndOwnerAsync(gameId, opponentId);
+        if (opponentBoard == null)
+            return ServiceResponse<BattleshipBoardDto>.Failure("Tablero del oponente no encontrado.");
 
-        var opponentBoard = await _boardRepository.Query()
-            .Include(b => b.Ships)
-            .Include(b => b.ReceivedAttacks)
-            .FirstOrDefaultAsync(b => b.GameId == dto.GameId && b.PlayerId == opponentId);
+        var dto = _mapper.Map<BattleshipBoardDto>(opponentBoard);
+        dto.Ships = _mapper.Map<List<ShipDto>>(opponentBoard.Ships ?? new List<BattleshipShip>());
+        dto.ReceivedAttacks = _mapper.Map<List<AttackResultDto>>(opponentBoard.ReceivedAttacks ?? new List<BattleshipAttack>());
 
+        return ServiceResponse<BattleshipBoardDto>.Success(dto);
+    }
+
+    public async Task<ServiceResponse<AttackResultDto>> AttackAsync(Guid gameId, Guid attackerId, int row, int col)
+    {
+        var game = await _gameRepo.GetWithBoardsAsync(gameId);
+        if (game == null)
+            return ServiceResponse<AttackResultDto>.Failure("La partida no existe.");
+
+        // Verificar timeout 48h
+        if (game.TurnStartedAt.HasValue &&
+            DateTime.UtcNow - game.TurnStartedAt.Value > TimeSpan.FromHours(48))
+        {
+            var timeoutWinnerId = game.CurrentTurnPlayerId == game.Player1Id
+                ? game.Player2Id
+                : game.Player1Id;
+
+            game.Status = GameStatus.Finished;
+            game.WinnerId = timeoutWinnerId;
+            await _gameRepo.UpdateAsync(game);
+
+            return ServiceResponse<AttackResultDto>.Failure("La partida finalizo por inactividad.");
+        }
+
+        // Validar reglas
+        try
+        {
+            RuleValidator.CheckRule(new GameMustBeActiveToAttackRule(game.Status));
+            RuleValidator.CheckRule(new AttackerMustHaveActiveTurnRule(game.CurrentTurnPlayerId, attackerId));
+        }
+        catch (Exception ex)
+        {
+            return ServiceResponse<AttackResultDto>.Failure(ex.Message);
+        }
+
+        var alreadyAttacked = await _attackRepo.HasAttackedCellAsync(gameId, attackerId, row, col);
+        try { RuleValidator.CheckRule(new CellMustNotBeAlreadyAttackedRule(alreadyAttacked)); }
+        catch (Exception ex) { return ServiceResponse<AttackResultDto>.Failure(ex.Message); }
+
+        // Determinar hit o miss
+        var opponentId = attackerId == game.Player1Id ? game.Player2Id : game.Player1Id;
+
+        var opponentBoard = await _boardRepo.GetByGameAndOwnerAsync(gameId, opponentId);
         if (opponentBoard == null)
             return ServiceResponse<AttackResultDto>.Failure("Tablero del oponente no encontrado.");
 
-        // Verificar si ya atacó ahí
-        if (opponentBoard.ReceivedAttacks.Any(a => a.CoordinateX == dto.TargetX && a.CoordinateY == dto.TargetY))
-            return ServiceResponse<AttackResultDto>.Failure("Ya has atacado esta coordenada.");
+        var occupiedCells = await _shipRepo.GetOccupiedCellsAsync(opponentBoard.Id);
+        var isHit = occupiedCells.Any(c => c.Row == row && c.Col == col);
 
-        bool isHit = false;
-        bool isSunk = false;
-        string? shipSunkName = null;
-
-        // Comprobar impacto (Lógica básica)
-        Domain.Entities.Battleship.BattleshipShip? hitShip = null;
-        foreach (var ship in opponentBoard.Ships)
+        // Persistir ataque
+        await _attackRepo.AddAsync(new BattleshipAttack
         {
-            var length = (int)ship.Size;
-            if (ship.Direction == ShipDirection.Horizontal)
-            {
-                if (dto.TargetY == ship.StartCoordinateY && dto.TargetX >= ship.StartCoordinateX && dto.TargetX < ship.StartCoordinateX + length)
-                {
-                    isHit = true;
-                    hitShip = ship;
-                    break;
-                }
-            }
-            else
-            {
-                if (dto.TargetX == ship.StartCoordinateX && dto.TargetY >= ship.StartCoordinateY && dto.TargetY < ship.StartCoordinateY + length)
-                {
-                    isHit = true;
-                    hitShip = ship;
-                    break;
-                }
-            }
-        }
-
-        var attack = new Domain.Entities.Battleship.BattleshipAttack
-        {
+            Id = Guid.NewGuid(),
             BoardId = opponentBoard.Id,
-            CoordinateX = dto.TargetX,
-            CoordinateY = dto.TargetY,
+            CoordinateX = col,
+            CoordinateY = row,
             IsHit = isHit
-        };
-        await _attackRepository.AddAsync(attack);
-        opponentBoard.ReceivedAttacks.Add(attack); // Agregar a la colección local para comprobar hundimiento
+        });
 
-        if (isHit && hitShip != null)
-        {
-            // Comprobar si se hundió (Si todos los puntos del barco fueron atacados con éxito)
-            isSunk = CheckIfSunk(hitShip, opponentBoard.ReceivedAttacks.ToList());
-            if (isSunk)
-            {
-                hitShip.IsSunk = true;
-                await _shipRepository.UpdateAsync(hitShip);
-                shipSunkName = hitShip.Size.ToString();
-            }
-        }
+        // Verificar si gano
+        var allSunk = await _attackRepo.AllShipsSunkAsync(gameId, attackerId, occupiedCells);
 
-        // Comprobar fin del juego
-        bool isGameOver = opponentBoard.Ships.All(s => s.IsSunk);
-        
-        if (isGameOver)
+        if (allSunk)
         {
             game.Status = GameStatus.Finished;
-            game.Result = game.Player1Id == dto.AttackerPlayerId ? GameResult.Player1Won : GameResult.Player2Won;
-            game.WinnerId = dto.AttackerPlayerId;
-        }
-        else
-        {
-            // Cambiar turno
-            game.CurrentTurnPlayerId = opponentId;
-            
-            // Notificar turno al oponente
-            await _notificationDispatch.SendNotificationAsync(
-                opponentId,
-                NotificationType.BattleshipTurn,
-                "Es tu turno en Battleship.",
-                game.Id.ToString());
+            game.WinnerId = attackerId;
+            game.Result = GameResult.None;
+            await _gameRepo.UpdateAsync(game);
+
+            return ServiceResponse<AttackResultDto>.Success(new AttackResultDto
+            {
+                CoordinateX = col,
+                CoordinateY = row,
+                IsHit = true,
+                IsSunk = true,
+                IsGameOver = true,
+                WinnerId = attackerId
+            });
         }
 
-        await _gameRepository.UpdateAsync(game);
+        // Cambiar turno
+        game.CurrentTurnPlayerId = opponentId;
+        game.TurnStartedAt = DateTime.UtcNow;
+        await _gameRepo.UpdateAsync(game);
 
         return ServiceResponse<AttackResultDto>.Success(new AttackResultDto
         {
-            CoordinateX = dto.TargetX,
-            CoordinateY = dto.TargetY,
+            CoordinateX = col,
+            CoordinateY = row,
             IsHit = isHit,
-            IsSunk = isSunk,
-            IsGameOver = isGameOver,
-            WinnerId = game.WinnerId,
-            ShipSunkName = shipSunkName
+            IsSunk = false,
+            IsGameOver = false
         });
-    }
-
-    private bool CheckIfSunk(Domain.Entities.Battleship.BattleshipShip ship, List<Domain.Entities.Battleship.BattleshipAttack> allAttacks)
-    {
-        var length = (int)ship.Size;
-        if (ship.Direction == ShipDirection.Horizontal)
-        {
-            for (int i = 0; i < length; i++)
-            {
-                if (!allAttacks.Any(a => a.CoordinateX == ship.StartCoordinateX + i && a.CoordinateY == ship.StartCoordinateY))
-                    return false;
-            }
-        }
-        else
-        {
-            for (int i = 0; i < length; i++)
-            {
-                if (!allAttacks.Any(a => a.CoordinateY == ship.StartCoordinateY + i && a.CoordinateX == ship.StartCoordinateX))
-                    return false;
-            }
-        }
-        return true;
     }
 }

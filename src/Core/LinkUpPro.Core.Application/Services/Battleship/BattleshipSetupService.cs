@@ -1,135 +1,149 @@
+﻿using AutoMapper;
 using LinkUpPro.Application.Common;
 using LinkUpPro.Application.DTOs.Battleship;
 using LinkUpPro.Application.Interfaces.Battleship;
+using LinkUpPro.Domain.Entities.Battleship;
 using LinkUpPro.Domain.Enums.Battleship;
+using LinkUpPro.Domain.Exceptions;
 using LinkUpPro.Domain.Interfaces.Repositories.Battleship;
+using LinkUpPro.Domain.Rules.Battleship.Ship;
 using Microsoft.EntityFrameworkCore;
 
 namespace LinkUpPro.Application.Services.Battleship;
 
 public class BattleshipSetupService : IBattleshipSetupService
 {
-    private readonly IBattleshipGameRepository _gameRepository;
-    private readonly IBattleshipBoardRepository _boardRepository;
-    private readonly IBattleshipShipRepository _shipRepository;
+    private readonly IBattleshipGameRepository _gameRepo;
+    private readonly IBattleshipBoardRepository _boardRepo;
+    private readonly IBattleshipShipRepository _shipRepo;
+    private readonly IMapper _mapper;
 
     public BattleshipSetupService(
-        IBattleshipGameRepository gameRepository,
-        IBattleshipBoardRepository boardRepository,
-        IBattleshipShipRepository shipRepository)
+        IBattleshipGameRepository gameRepo,
+        IBattleshipBoardRepository boardRepo,
+        IBattleshipShipRepository shipRepo,
+        IMapper mapper)
     {
-        _gameRepository = gameRepository;
-        _boardRepository = boardRepository;
-        _shipRepository = shipRepository;
-    }
-
-    public async Task<ServiceResponse<BattleshipBoardDto>> GetBoardAsync(Guid gameId, Guid playerId)
-    {
-        var board = await _boardRepository.Query()
-            .Include(b => b.Ships)
-            .Include(b => b.ReceivedAttacks)
-            .FirstOrDefaultAsync(b => b.GameId == gameId && b.PlayerId == playerId);
-
-        if (board == null)
-            return ServiceResponse<BattleshipBoardDto>.Failure("Tablero no encontrado.");
-
-        var dto = new BattleshipBoardDto
-        {
-            Id = board.Id,
-            GameId = board.GameId,
-            PlayerId = board.PlayerId,
-            Ships = board.Ships.Select(s => new ShipDto
-            {
-                Id = s.Id,
-                Size = s.Size,
-                Direction = s.Direction,
-                StartX = s.StartCoordinateX,
-                StartY = s.StartCoordinateY,
-                IsSunk = s.IsSunk
-            }).ToList(),
-            ReceivedAttacks = board.ReceivedAttacks.Select(a => new AttackResultDto
-            {
-                CoordinateX = a.CoordinateX,
-                CoordinateY = a.CoordinateY,
-                IsHit = a.IsHit,
-                IsSunk = false // Simplificado para DTO
-            }).ToList()
-        };
-
-        return ServiceResponse<BattleshipBoardDto>.Success(dto);
+        _gameRepo = gameRepo;
+        _boardRepo = boardRepo;
+        _shipRepo = shipRepo;
+        _mapper = mapper;
     }
 
     public async Task<ServiceResponse<ShipDto>> PlaceShipAsync(PlaceShipDto dto)
     {
-        var game = await _gameRepository.GetByIdAsync(dto.GameId);
-        if (game == null || game.Status != GameStatus.PlacingShips)
-            return ServiceResponse<ShipDto>.Failure("Juego no válido o no está en fase de colocación.");
-
-        var board = await _boardRepository.Query()
-            .Include(b => b.Ships)
-            .FirstOrDefaultAsync(b => b.GameId == dto.GameId && b.PlayerId == dto.PlayerId);
-
+        var board = await _boardRepo.GetByGameAndOwnerAsync(dto.GameId, dto.PlayerId);
         if (board == null)
+            return ServiceResponse<ShipDto>.Failure("Tablero no encontrado.");
+
+        var ships = await _shipRepo.GetByBoardAsync(board.Id);
+
+        // Buscar un barco sin colocar del tamano indicado
+        var ship = ships.FirstOrDefault(s => (int)s.Size == (int)dto.Size && s.StartCoordinateX == 0 && s.StartCoordinateY == 0 && !s.IsSunk);
+        if (ship == null)
         {
-            board = new Domain.Entities.Battleship.BattleshipBoard
-            {
-                GameId = dto.GameId,
-                PlayerId = dto.PlayerId
-            };
-            await _boardRepository.AddAsync(board);
+            // Buscar por tamano sin importar posicion (primer no colocado)
+            ship = ships.FirstOrDefault(s => (int)s.Size == (int)dto.Size);
         }
+        if (ship == null)
+            return ServiceResponse<ShipDto>.Failure("Barco no encontrado para ese tamano.");
 
-        // Lógica súper básica de validación (debería comprobar colisiones y límites de tablero)
-        int length = (int)dto.Size;
-        if (dto.Direction == ShipDirection.Horizontal && dto.StartX + length > 12)
-            return ServiceResponse<ShipDto>.Failure("El barco se sale del tablero horizontalmente.");
-        if (dto.Direction == ShipDirection.Vertical && dto.StartY + length > 12)
-            return ServiceResponse<ShipDto>.Failure("El barco se sale del tablero verticalmente.");
+        // Validar colision
+        var occupiedCells = await _shipRepo.GetOccupiedCellsAsync(board.Id);
+        var newCells = CalculateCells(dto.StartY, dto.StartX, (int)dto.Size, dto.Direction);
 
-        // TODO: Comprobar colisión con otros barcos de board.Ships...
-
-        var ship = new Domain.Entities.Battleship.BattleshipShip
+        // Verificar limites 12x12
+        bool outOfBounds = dto.Direction switch
         {
-            BoardId = board.Id,
-            Size = dto.Size,
-            Direction = dto.Direction,
-            StartCoordinateX = dto.StartX,
-            StartCoordinateY = dto.StartY,
-            IsSunk = false
+            ShipDirection.Right => dto.StartX + (int)dto.Size > 12,
+            ShipDirection.Left => dto.StartX - (int)dto.Size + 1 < 0,
+            ShipDirection.Down => dto.StartY + (int)dto.Size > 12,
+            ShipDirection.Up => dto.StartY - (int)dto.Size + 1 < 0,
+            _ => true
         };
 
-        await _shipRepository.AddAsync(ship);
+        if (outOfBounds)
+            return ServiceResponse<ShipDto>.Failure($"El barco sale del tablero en dirección {dto.Direction}.");
 
-        return ServiceResponse<ShipDto>.Success(new ShipDto
-        {
-            Id = ship.Id,
-            Size = ship.Size,
-            Direction = ship.Direction,
-            StartX = ship.StartCoordinateX,
-            StartY = ship.StartCoordinateY,
-            IsSunk = ship.IsSunk
-        });
+        // Verificar colisiones (excluir el barco actual si ya estaba colocado)
+        var cellsWithoutCurrentShip = occupiedCells.ToList();
+        var currentShipCells = CalculateCells(ship.StartCoordinateY, ship.StartCoordinateX, (int)ship.Size, ship.Direction);
+        cellsWithoutCurrentShip = cellsWithoutCurrentShip
+            .Where(c => !currentShipCells.Any(sc => sc.Row == c.Row && sc.Col == c.Col))
+            .ToList();
+
+        if (newCells.Any(nc => cellsWithoutCurrentShip.Any(oc => oc.Row == nc.Row && oc.Col == nc.Col)))
+            return ServiceResponse<ShipDto>.Failure("El barco se superpone con otro barco.");
+
+        ship.StartCoordinateX = dto.StartX;
+        ship.StartCoordinateY = dto.StartY;
+        ship.Direction = dto.Direction;
+        await _shipRepo.UpdateAsync(ship);
+
+        return ServiceResponse<ShipDto>.Success(_mapper.Map<ShipDto>(ship));
     }
+
+    public async Task<ServiceResponse<BattleshipBoardDto>> GetBoardAsync(Guid gameId, Guid playerId)
+    {
+        var board = await _boardRepo.GetByGameAndOwnerAsync(gameId, playerId);
+        if (board == null)
+            return ServiceResponse<BattleshipBoardDto>.Failure("Tablero no encontrado.");
+
+        var ships = await _shipRepo.GetByBoardAsync(board.Id);
+        var attacks = board.ReceivedAttacks ?? new List<BattleshipAttack>();
+
+        var dto = _mapper.Map<BattleshipBoardDto>(board);
+        dto.Ships = _mapper.Map<List<ShipDto>>(ships);
+        dto.ReceivedAttacks = _mapper.Map<List<AttackResultDto>>(attacks);
+
+        return ServiceResponse<BattleshipBoardDto>.Success(dto);
+    }
+
+    public async Task<bool> BothPlayersReadyAsync(Guid gameId)
+        => await _boardRepo.BothPlayersReadyAsync(gameId);
 
     public async Task<BaseResult> ConfirmSetupAsync(Guid gameId, Guid playerId)
     {
-        var game = await _gameRepository.Query()
-            .Include(g => g.Boards).ThenInclude(b => b.Ships)
-            .FirstOrDefaultAsync(g => g.Id == gameId);
+        var board = await _boardRepo.GetByGameAndOwnerAsync(gameId, playerId);
+        if (board == null)
+            return BaseResult.Fail("Tablero no encontrado.");
 
-        if (game == null) return BaseResult.Fail("Juego no encontrado.");
+        var ships = await _shipRepo.GetByBoardAsync(board.Id);
+        if (ships.Count < 5)
+            return BaseResult.Fail("Debes colocar los 5 barcos antes de confirmar.");
 
-        var playerBoard = game.Boards.FirstOrDefault(b => b.PlayerId == playerId);
-        if (playerBoard == null || playerBoard.Ships.Count < 5) // Asumiendo 5 barcos como estándar
-            return BaseResult.Fail("Aún no has colocado todos tus barcos.");
-
-        // Si ambos jugadores tienen 5 barcos (ya confirmaron)
-        if (game.Boards.Count == 2 && game.Boards.All(b => b.Ships.Count == 5))
+        // Si ambos jugadores estan listos, activar la partida
+        var bothReady = await _boardRepo.BothPlayersReadyAsync(gameId);
+        if (bothReady)
         {
-            game.Status = GameStatus.InProgress;
-            await _gameRepository.UpdateAsync(game);
+            var game = await _gameRepo.GetByIdAsync(gameId);
+            if (game != null)
+            {
+                game.Status = GameStatus.InProgress;
+                game.CurrentTurnPlayerId = game.Player1Id;
+                game.TurnStartedAt = DateTime.UtcNow;
+                await _gameRepo.UpdateAsync(game);
+            }
         }
 
         return BaseResult.Ok();
+    }
+
+    private static IReadOnlyList<(int Row, int Col)> CalculateCells(int startRow, int startCol, int size, ShipDirection direction)
+    {
+        var cells = new List<(int, int)>();
+        for (int i = 0; i < size; i++)
+        {
+            var (row, col) = direction switch
+            {
+                ShipDirection.Right => (startRow, startCol + i),
+                ShipDirection.Left => (startRow, startCol - i),
+                ShipDirection.Down => (startRow + i, startCol),
+                ShipDirection.Up => (startRow - i, startCol),
+                _ => (startRow, startCol)
+            };
+            cells.Add((row, col));
+        }
+        return cells;
     }
 }

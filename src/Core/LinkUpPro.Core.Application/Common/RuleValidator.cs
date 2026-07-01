@@ -16,4 +16,12 @@ public static class RuleValidator
             }
         }
     }
+
+    public static void CheckRule(IBusinessRule rule)
+    {
+        if (rule.IsBroken())
+        {
+            throw new BusinessRuleViolationException(rule.Message);
+        }
+    }
 }

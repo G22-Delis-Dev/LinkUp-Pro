@@ -1,3 +1,4 @@
+using AutoMapper;
 using LinkUpPro.Application.Common;
 using LinkUpPro.Application.DTOs.Notification;
 using LinkUpPro.Application.Interfaces.Notification;
@@ -9,10 +10,12 @@ namespace LinkUpPro.Application.Services.Notification;
 public class NotificationService : INotificationService
 {
     private readonly INotificationRepository _notificationRepository;
+    private readonly IMapper _mapper;
 
-    public NotificationService(INotificationRepository notificationRepository)
+    public NotificationService(INotificationRepository notificationRepository, IMapper mapper)
     {
         _notificationRepository = notificationRepository;
+        _mapper = mapper;
     }
 
     public async Task<List<NotificationDto>> GetNotificationsAsync(Guid userId)
@@ -22,16 +25,7 @@ public class NotificationService : INotificationService
             .OrderByDescending(n => n.CreatedAt)
             .ToListAsync();
 
-        return notifications.Select(n => new NotificationDto
-        {
-            Id = n.Id,
-            UserId = n.UserId,
-            Message = n.Message,
-            Type = n.Type,
-            IsRead = n.IsRead,
-            RelatedEntityId = n.RelatedEntityId,
-            CreatedAt = n.CreatedAt
-        }).ToList();
+        return _mapper.Map<List<NotificationDto>>(notifications);
     }
 
     public async Task<BaseResult> MarkAsReadAsync(Guid notificationId, Guid userId)

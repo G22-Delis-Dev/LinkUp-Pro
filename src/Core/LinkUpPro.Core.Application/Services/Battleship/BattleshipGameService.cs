@@ -1,145 +1,172 @@
-using LinkUpPro.Application.Common;
+﻿using LinkUpPro.Application.Common;
 using LinkUpPro.Application.DTOs.Battleship;
 using LinkUpPro.Application.Interfaces.Battleship;
-using LinkUpPro.Application.Interfaces.Notification;
+using LinkUpPro.Domain.Entities.Battleship;
 using LinkUpPro.Domain.Enums.Battleship;
-using LinkUpPro.Domain.Enums.Notification;
+using LinkUpPro.Domain.Exceptions;
 using LinkUpPro.Domain.Interfaces.Repositories.Battleship;
-using LinkUpPro.Domain.Interfaces.Repositories.User;
-using Microsoft.EntityFrameworkCore;
+using LinkUpPro.Domain.Interfaces.Repositories.Friendship;
+using LinkUpPro.Domain.Rules.Battleship.Game;
 
 namespace LinkUpPro.Application.Services.Battleship;
 
 public class BattleshipGameService : IBattleshipGameService
 {
-    private readonly IBattleshipGameRepository _gameRepository;
-    private readonly IUserRepository _userRepository;
-    private readonly INotificationDispatchService _notificationDispatch;
+    private readonly IBattleshipGameRepository _gameRepo;
+    private readonly IBattleshipBoardRepository _boardRepo;
+    private readonly IBattleshipShipRepository _shipRepo;
+    private readonly IFriendshipRepository _friendshipRepo;
+
+    private static readonly int[] DefaultShipSizes = { 2, 3, 3, 4, 5 };
 
     public BattleshipGameService(
-        IBattleshipGameRepository gameRepository,
-        IUserRepository userRepository,
-        INotificationDispatchService notificationDispatch)
+        IBattleshipGameRepository gameRepo,
+        IBattleshipBoardRepository boardRepo,
+        IBattleshipShipRepository shipRepo,
+        IFriendshipRepository friendshipRepo)
     {
-        _gameRepository = gameRepository;
-        _userRepository = userRepository;
-        _notificationDispatch = notificationDispatch;
+        _gameRepo = gameRepo;
+        _boardRepo = boardRepo;
+        _shipRepo = shipRepo;
+        _friendshipRepo = friendshipRepo;
     }
 
-    public async Task<ServiceResponse<BattleshipGameDto>> CreateGameAsync(Guid player1Id, Guid opponentId)
+    public async Task<ServiceResponse<BattleshipGameDto>> CreateGameAsync(Guid creatorId, Guid opponentId)
     {
-        if (player1Id == opponentId)
-            return ServiceResponse<BattleshipGameDto>.Failure("No puedes jugar contra ti mismo.");
-
-        // Validar si ya hay un juego activo entre ellos
-        var existingGame = await _gameRepository.FindOneAsync(g =>
-            ((g.Player1Id == player1Id && g.Player2Id == opponentId) ||
-             (g.Player1Id == opponentId && g.Player2Id == player1Id)) &&
-            (g.Status == GameStatus.WaitingForOpponent || g.Status == GameStatus.PlacingShips || g.Status == GameStatus.InProgress));
-
-        if (existingGame != null)
-            return ServiceResponse<BattleshipGameDto>.Failure("Ya tienen una partida activa.");
-
-        var game = new Domain.Entities.Battleship.BattleshipGame
+        try
         {
-            Player1Id = player1Id,
-            Player2Id = opponentId,
-            Status = GameStatus.PlacingShips, // Directamente a colocar barcos para simplificar
-            CurrentTurnPlayerId = player1Id // P1 empieza (aunque no aplica hasta InProgress)
-        };
+            var areFriends = await _friendshipRepo.AreActiveFriendsAsync(creatorId, opponentId);
+            if (!areFriends)
+                return ServiceResponse<BattleshipGameDto>.Failure("Solo puedes iniciar una partida con un amigo activo.");
 
-        await _gameRepository.AddAsync(game);
+            var hasActive = await _gameRepo.HasActiveGameWithAsync(creatorId, opponentId);
+            RuleValidator.CheckRule(new NoActiveGameWithSameOpponentRule(hasActive));
 
-        var p1 = await _userRepository.GetByIdAsync(player1Id);
-        var p2 = await _userRepository.GetByIdAsync(opponentId);
+            var game = new BattleshipGame
+            {
+                Id = Guid.NewGuid(),
+                Player1Id = creatorId,
+                Player2Id = opponentId,
+                Status = GameStatus.PlacingShips,
+                CurrentTurnPlayerId = creatorId,
+                TurnStartedAt = DateTime.UtcNow
+            };
+            await _gameRepo.AddAsync(game);
 
-        await _notificationDispatch.SendNotificationAsync(
-            opponentId,
-            NotificationType.BattleshipChallenge,
-            $"{p1?.FirstName} {p1?.LastName} te ha retado a una partida de Battleship.",
-            game.Id.ToString());
+            await CreateBoardAsync(game.Id, creatorId);
+            await CreateBoardAsync(game.Id, opponentId);
 
-        var dto = new BattleshipGameDto
+            var dto = new BattleshipGameDto
+            {
+                Id = game.Id,
+                Player1Id = game.Player1Id,
+                Player2Id = game.Player2Id,
+                Status = game.Status,
+                CurrentTurnPlayerId = game.CurrentTurnPlayerId
+            };
+
+            return ServiceResponse<BattleshipGameDto>.Success(dto);
+        }
+        catch (Exception ex)
         {
-            Id = game.Id,
-            Player1Id = game.Player1Id,
-            Player1Name = $"{p1?.FirstName} {p1?.LastName}",
-            Player2Id = game.Player2Id,
-            Player2Name = $"{p2?.FirstName} {p2?.LastName}",
-            Status = game.Status,
-            Result = game.Result,
-            CurrentTurnPlayerId = game.CurrentTurnPlayerId,
-            CreatedAt = game.CreatedAt
-        };
+            return ServiceResponse<BattleshipGameDto>.Failure(ex.Message);
+        }
+    }
 
-        return ServiceResponse<BattleshipGameDto>.Success(dto);
+    public async Task<BaseResult> SurrenderAsync(Guid gameId, Guid surrenderingUserId)
+    {
+        var game = await _gameRepo.GetByIdAsync(gameId);
+        if (game == null)
+            return BaseResult.Fail("La partida no existe.");
+
+        if (game.Player1Id != surrenderingUserId && game.Player2Id != surrenderingUserId)
+            return BaseResult.Fail("No eres participante de esta partida.");
+
+        if (game.Status == GameStatus.Finished || game.Status == GameStatus.Canceled)
+            return BaseResult.Fail("La partida ya termino.");
+
+        var winnerId = surrenderingUserId == game.Player1Id
+            ? game.Player2Id
+            : game.Player1Id;
+
+        game.Status = GameStatus.Finished;
+        game.WinnerId = winnerId;
+        game.Result = GameResult.None;
+        await _gameRepo.UpdateAsync(game);
+
+        return BaseResult.Ok();
+    }
+
+    public async Task CheckAndApplyTimeoutAsync(Guid gameId)
+    {
+        var game = await _gameRepo.GetByIdAsync(gameId);
+        if (game == null || game.Status == GameStatus.Finished) return;
+
+        if (game.TurnStartedAt.HasValue &&
+            DateTime.UtcNow - game.TurnStartedAt.Value > TimeSpan.FromHours(48))
+        {
+            var winnerId = game.CurrentTurnPlayerId == game.Player1Id
+                ? game.Player2Id
+                : game.Player1Id;
+
+            game.Status = GameStatus.Finished;
+            game.WinnerId = winnerId;
+            await _gameRepo.UpdateAsync(game);
+        }
+    }
+
+    public async Task<bool> IsParticipantAsync(Guid gameId, Guid userId)
+    {
+        var game = await _gameRepo.GetByIdAsync(gameId);
+        return game != null && (game.Player1Id == userId || game.Player2Id == userId);
     }
 
     public async Task<ServiceResponse<BattleshipGameDto>> GetGameAsync(Guid gameId)
     {
-        var game = await _gameRepository.Query()
-            .Include(g => g.Player1)
-            .Include(g => g.Player2)
-            .FirstOrDefaultAsync(g => g.Id == gameId);
-
+        var game = await _gameRepo.GetWithBoardsAsync(gameId);
         if (game == null)
             return ServiceResponse<BattleshipGameDto>.Failure("Partida no encontrada.");
 
-        var dto = new BattleshipGameDto
+        return ServiceResponse<BattleshipGameDto>.Success(MapToDto(game));
+    }
+
+    public async Task<List<BattleshipGameDto>> GetActiveGamesAsync(Guid userId)
+    {
+        var games = await _gameRepo.GetActiveByPlayerAsync(userId);
+        return games.Select(MapToDto).ToList();
+    }
+
+    private static BattleshipGameDto MapToDto(BattleshipGame g) => new()
+    {
+        Id = g.Id,
+        Player1Id = g.Player1Id,
+        Player1Name = g.Player1 != null ? $"{g.Player1.FirstName} {g.Player1.LastName}" : "",
+        Player2Id = g.Player2Id,
+        Player2Name = g.Player2 != null ? $"{g.Player2.FirstName} {g.Player2.LastName}" : "",
+        Status = g.Status,
+        Result = g.Result,
+        WinnerId = g.WinnerId,
+        CurrentTurnPlayerId = g.CurrentTurnPlayerId
+    };
+
+    private async Task CreateBoardAsync(Guid gameId, Guid ownerId)
+    {
+        var board = new BattleshipBoard
         {
-            Id = game.Id,
-            Player1Id = game.Player1Id,
-            Player1Name = $"{game.Player1.FirstName} {game.Player1.LastName}",
-            Player2Id = game.Player2Id,
-            Player2Name = $"{game.Player2.FirstName} {game.Player2.LastName}",
-            Status = game.Status,
-            Result = game.Result,
-            CurrentTurnPlayerId = game.CurrentTurnPlayerId,
-            WinnerId = game.WinnerId,
-            CreatedAt = game.CreatedAt
+            Id = Guid.NewGuid(),
+            GameId = gameId,
+            PlayerId = ownerId
         };
+        await _boardRepo.AddAsync(board);
 
-        return ServiceResponse<BattleshipGameDto>.Success(dto);
-    }
-
-    public async Task<List<BattleshipGameDto>> GetActiveGamesAsync(Guid playerId)
-    {
-        var games = await _gameRepository.Query()
-            .Where(g => (g.Player1Id == playerId || g.Player2Id == playerId) &&
-                        g.Status != GameStatus.Finished && g.Status != GameStatus.Canceled)
-            .Include(g => g.Player1)
-            .Include(g => g.Player2)
-            .OrderByDescending(g => g.CreatedAt)
-            .ToListAsync();
-
-        return games.Select(g => new BattleshipGameDto
+        foreach (var size in DefaultShipSizes)
         {
-            Id = g.Id,
-            Player1Id = g.Player1Id,
-            Player1Name = $"{g.Player1.FirstName} {g.Player1.LastName}",
-            Player2Id = g.Player2Id,
-            Player2Name = $"{g.Player2.FirstName} {g.Player2.LastName}",
-            Status = g.Status,
-            Result = g.Result,
-            CurrentTurnPlayerId = g.CurrentTurnPlayerId,
-            CreatedAt = g.CreatedAt
-        }).ToList();
-    }
-
-    public async Task<BaseResult> CancelGameAsync(Guid gameId, Guid playerId)
-    {
-        var game = await _gameRepository.GetByIdAsync(gameId);
-        if (game == null) return BaseResult.Fail("Partida no encontrada.");
-
-        if (game.Player1Id != playerId && game.Player2Id != playerId)
-            return BaseResult.Fail("No tienes permisos en esta partida.");
-
-        game.Status = GameStatus.Canceled;
-        game.Result = GameResult.Abandoned;
-        game.WinnerId = game.Player1Id == playerId ? game.Player2Id : game.Player1Id; // Gana el otro por abandono
-
-        await _gameRepository.UpdateAsync(game);
-
-        return BaseResult.Ok();
+            await _shipRepo.AddAsync(new BattleshipShip
+            {
+                Id = Guid.NewGuid(),
+                BoardId = board.Id,
+                Size = (ShipSize)size
+            });
+        }
     }
 }

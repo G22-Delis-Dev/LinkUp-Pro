@@ -38,12 +38,14 @@ namespace LinkUpPro.Infrastructure.Persistence.Repositories
             {
                 for (int i = 0; i < (int)ship.Size; i++)
                 {
-                    var row = ship.Direction == ShipDirection.Vertical
-                        ? ship.StartCoordinateY + i
-                        : ship.StartCoordinateY;
-                    var col = ship.Direction == ShipDirection.Horizontal
-                        ? ship.StartCoordinateX + i
-                        : ship.StartCoordinateX;
+                    var (row, col) = ship.Direction switch
+                    {
+                        ShipDirection.Right => (ship.StartCoordinateY, ship.StartCoordinateX + i),
+                        ShipDirection.Left => (ship.StartCoordinateY, ship.StartCoordinateX - i),
+                        ShipDirection.Down => (ship.StartCoordinateY + i, ship.StartCoordinateX),
+                        ShipDirection.Up => (ship.StartCoordinateY - i, ship.StartCoordinateX),
+                        _ => (ship.StartCoordinateY, ship.StartCoordinateX)
+                    };
                     cells.Add((row, col));
                 }
             }

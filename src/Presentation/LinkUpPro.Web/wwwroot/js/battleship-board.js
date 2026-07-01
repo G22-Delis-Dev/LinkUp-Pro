@@ -2,7 +2,7 @@
 
 const BOARD_SIZE = 12;
 let selectedShipSize = 0;
-let currentDirection = 0; // 0: Horizontal, 1: Vertical
+let currentDirection = 3; // 0: Up, 1: Down, 2: Left, 3: Right (default: Right)
 let placedShipsData = [];
 let currentShipBtn = null;
 
@@ -40,16 +40,29 @@ function initSetupBoard() {
         currentShipBtn = $(this);
     });
 
-    $('#dirHorizontal').click(function() {
-        currentDirection = 0;
+    // Botones de dirección
+    $('#dirRight').click(function() {
+        currentDirection = 3;
+        $('.grid button[id^="dir"]').removeClass('bg-accent/20 text-accent').addClass('text-text-muted hover:text-white');
         $(this).addClass('bg-accent/20 text-accent').removeClass('text-text-muted hover:text-white');
-        $('#dirVertical').removeClass('bg-accent/20 text-accent').addClass('text-text-muted hover:text-white');
     });
 
-    $('#dirVertical').click(function() {
-        currentDirection = 1;
+    $('#dirLeft').click(function() {
+        currentDirection = 2;
+        $('.grid button[id^="dir"]').removeClass('bg-accent/20 text-accent').addClass('text-text-muted hover:text-white');
         $(this).addClass('bg-accent/20 text-accent').removeClass('text-text-muted hover:text-white');
-        $('#dirHorizontal').removeClass('bg-accent/20 text-accent').addClass('text-text-muted hover:text-white');
+    });
+
+    $('#dirDown').click(function() {
+        currentDirection = 1;
+        $('.grid button[id^="dir"]').removeClass('bg-accent/20 text-accent').addClass('text-text-muted hover:text-white');
+        $(this).addClass('bg-accent/20 text-accent').removeClass('text-text-muted hover:text-white');
+    });
+
+    $('#dirUp').click(function() {
+        currentDirection = 0;
+        $('.grid button[id^="dir"]').removeClass('bg-accent/20 text-accent').addClass('text-text-muted hover:text-white');
+        $(this).addClass('bg-accent/20 text-accent').removeClass('text-text-muted hover:text-white');
     });
 
     // Hover effect en celdas
@@ -62,8 +75,13 @@ function initSetupBoard() {
             let isValid = checkValidPlacement(x, y, selectedShipSize, currentDirection);
             
             for (let i = 0; i < selectedShipSize; i++) {
-                let cx = currentDirection === 0 ? x + i : x;
-                let cy = currentDirection === 1 ? y + i : y;
+                let cx = x;
+                let cy = y;
+                
+                if (currentDirection === 3) cx = x + i; // Right
+                else if (currentDirection === 2) cx = x - i; // Left
+                else if (currentDirection === 1) cy = y + i; // Down
+                else if (currentDirection === 0) cy = y - i; // Up
                 
                 let cell = $(`#setupBoard .grid-cell[data-x="${cx}"][data-y="${cy}"]`);
                 if (cell.length) {
@@ -156,14 +174,23 @@ function renderGrid(containerId, interactive) {
 }
 
 function checkValidPlacement(x, y, size, dir) {
-    // Límites
-    if (dir === 0 && x + size > BOARD_SIZE) return false;
-    if (dir === 1 && y + size > BOARD_SIZE) return false;
+    // Límites según dirección
+    // 0: Up, 1: Down, 2: Left, 3: Right
+    if (dir === 3 && x + size > BOARD_SIZE) return false; // Right
+    if (dir === 2 && x - size + 1 < 0) return false; // Left
+    if (dir === 1 && y + size > BOARD_SIZE) return false; // Down
+    if (dir === 0 && y - size + 1 < 0) return false; // Up
 
     // Colisiones visuales locales
     for (let i = 0; i < size; i++) {
-        let cx = dir === 0 ? x + i : x;
-        let cy = dir === 1 ? y + i : y;
+        let cx = x;
+        let cy = y;
+        
+        if (dir === 3) cx = x + i; // Right
+        else if (dir === 2) cx = x - i; // Left
+        else if (dir === 1) cy = y + i; // Down
+        else if (dir === 0) cy = y - i; // Up
+        
         let cell = $(`#setupBoard .grid-cell[data-x="${cx}"][data-y="${cy}"]`);
         if (cell.hasClass('has-ship')) return false;
     }
@@ -172,18 +199,32 @@ function checkValidPlacement(x, y, size, dir) {
 
 function markShipOnGrid(x, y, size, dir) {
     for (let i = 0; i < size; i++) {
-        let cx = dir === 0 ? x + i : x;
-        let cy = dir === 1 ? y + i : y;
+        let cx = x;
+        let cy = y;
+        
+        if (dir === 3) cx = x + i; // Right
+        else if (dir === 2) cx = x - i; // Left
+        else if (dir === 1) cy = y + i; // Down
+        else if (dir === 0) cy = y - i; // Up
+        
         let cell = $(`#setupBoard .grid-cell[data-x="${cx}"][data-y="${cy}"]`);
         
         // Estilos para que parezca un bloque continuo
         let classes = 'bg-accent/80 has-ship ';
-        if (dir === 0) {
+        
+        // Bordes redondeados según dirección
+        if (dir === 3) { // Right
             if (i === 0) classes += 'rounded-l-full ';
             else if (i === size - 1) classes += 'rounded-r-full ';
-        } else {
+        } else if (dir === 2) { // Left
+            if (i === 0) classes += 'rounded-r-full ';
+            else if (i === size - 1) classes += 'rounded-l-full ';
+        } else if (dir === 1) { // Down
             if (i === 0) classes += 'rounded-t-full ';
             else if (i === size - 1) classes += 'rounded-b-full ';
+        } else if (dir === 0) { // Up
+            if (i === 0) classes += 'rounded-b-full ';
+            else if (i === size - 1) classes += 'rounded-t-full ';
         }
         
         cell.removeClass('bg-black/20').addClass(classes);

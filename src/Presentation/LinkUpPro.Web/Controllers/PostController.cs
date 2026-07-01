@@ -1,3 +1,5 @@
+using AutoMapper;
+using LinkUpPro.Application.DTOs.Post;
 using LinkUpPro.Application.Interfaces.Post;
 using LinkUpPro.Application.ViewModels.Post;
 using Microsoft.AspNetCore.Authorization;
@@ -10,11 +12,13 @@ public class PostController : Controller
 {
     private readonly IPostService _postService;
     private readonly IPostQueryService _postQueryService;
+    private readonly IMapper _mapper;
 
-    public PostController(IPostService postService, IPostQueryService postQueryService)
+    public PostController(IPostService postService, IPostQueryService postQueryService, IMapper mapper)
     {
         _postService = postService;
         _postQueryService = postQueryService;
+        _mapper = mapper;
     }
 
     [HttpGet]
@@ -24,28 +28,15 @@ public class PostController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreatePostViewModel model)
     {
         if (!ModelState.IsValid) return View(model);
 
         var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
-        
-        var dto = new LinkUpPro.Application.DTOs.Post.CreatePostDto
-        {
-            UserId = currentUserId,
-            Content = model.Content,
-            Privacy = model.Privacy,
-            ContentType = model.ContentType,
-            AllowComments = model.AllowComments,
-            YouTubeUrl = model.YouTubeUrl
-        };
 
-        if (model.Image != null)
-        {
-            dto.ImageStream = model.Image.OpenReadStream();
-            dto.ImageContentType = model.Image.ContentType;
-            dto.ImageFileName = model.Image.FileName;
-        }
+        var dto = _mapper.Map<CreatePostDto>(model);
+        dto.UserId = currentUserId;
 
         var result = await _postService.CreatePostAsync(dto);
 
@@ -80,20 +71,15 @@ public class PostController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(EditPostViewModel model)
     {
         if (!ModelState.IsValid) return View(model);
 
         var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
-        
-        var dto = new LinkUpPro.Application.DTOs.Post.UpdatePostDto
-        {
-            PostId = model.Id,
-            UserId = currentUserId,
-            Content = model.Content,
-            Privacy = model.Privacy,
-            AllowComments = model.AllowComments
-        };
+
+        var dto = _mapper.Map<UpdatePostDto>(model);
+        dto.UserId = currentUserId;
 
         var result = await _postService.UpdatePostAsync(dto);
 
@@ -108,6 +94,7 @@ public class PostController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id)
     {
         var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
@@ -129,26 +116,9 @@ public class PostController : Controller
         
         if (result.HasError || result.Data == null) return NotFound();
 
-        var p = result.Data;
-        var viewModel = new PostViewModel
-        {
-            Id = p.Id,
-            UserId = p.UserId,
-            AuthorName = p.AuthorName,
-            AuthorProfilePicture = p.AuthorProfilePicture,
-            Content = p.Content,
-            Privacy = p.Privacy,
-            ContentType = p.ContentType,
-            AllowComments = p.AllowComments,
-            ImageUrl = p.ImageUrl,
-            YouTubeVideoId = p.YouTubeVideoId,
-            CommentCount = p.CommentCount,
-            LikeCount = p.LikeCount,
-            DislikeCount = p.DislikeCount,
-            CreatedAt = p.CreatedAt,
-            TimeAgo = $"{(int)(DateTime.UtcNow - p.CreatedAt).TotalHours}h",
-            IsOwner = p.UserId == currentUserId
-        };
+        var viewModel = _mapper.Map<PostViewModel>(result.Data);
+        viewModel.IsOwner = result.Data.UserId == currentUserId;
+        viewModel.TimeAgo = $"{(int)(DateTime.UtcNow - result.Data.CreatedAt).TotalHours}h";
 
         return View(viewModel);
     }

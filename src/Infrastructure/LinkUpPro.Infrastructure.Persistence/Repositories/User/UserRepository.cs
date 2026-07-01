@@ -34,5 +34,21 @@ namespace LinkUpPro.Infrastructure.Persistence.Repositories
             => await _dbSet
                    .Where(u => u.Id == userId && u.IsActive)
                    .FirstOrDefaultAsync();
+
+        public async Task<IReadOnlyList<User>> SearchActiveUsersAsync(
+            string query, Guid excludeUserId, CancellationToken cancellationToken = default)
+        {
+            var q = query.ToLower().Trim();
+            return await _dbSet
+                .Where(u => u.IsActive
+                    && u.Id != excludeUserId
+                    && (u.FirstName.ToLower().Contains(q)
+                        || u.LastName.ToLower().Contains(q)
+                        || (u.FirstName + " " + u.LastName).ToLower().Contains(q)))
+                .OrderBy(u => u.FirstName)
+                .ThenBy(u => u.LastName)
+                .Take(20)
+                .ToListAsync(cancellationToken);
+        }
     }
 }

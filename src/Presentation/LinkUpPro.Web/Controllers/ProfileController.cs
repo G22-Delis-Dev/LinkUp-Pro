@@ -1,3 +1,4 @@
+using AutoMapper;
 using LinkUpPro.Application.DTOs.User;
 using LinkUpPro.Application.Interfaces.Friendship;
 using LinkUpPro.Application.Interfaces.Post;
@@ -15,17 +16,20 @@ public class ProfileController : Controller
     private readonly IPostQueryService _postQueryService;
     private readonly IFriendshipService _friendshipService;
     private readonly IMutualFriendService _mutualFriendService;
+    private readonly IMapper _mapper;
 
     public ProfileController(
         IUserService userService,
         IPostQueryService postQueryService,
         IFriendshipService friendshipService,
-        IMutualFriendService mutualFriendService)
+        IMutualFriendService mutualFriendService,
+        IMapper mapper)
     {
         _userService = userService;
         _postQueryService = postQueryService;
         _friendshipService = friendshipService;
         _mutualFriendService = mutualFriendService;
+        _mapper = mapper;
     }
 
     [HttpGet]
@@ -44,25 +48,12 @@ public class ProfileController : Controller
             : feedResult.Data.ToList();
 
         // Filtrar posts propios del usuario para su muro
-        var userPosts = postDtos.Where(p => p.UserId == targetId).Select(p => new PostViewModel
+        var userPosts = _mapper.Map<List<PostViewModel>>(postDtos.Where(p => p.UserId == targetId).ToList());
+        foreach (var (vm, dto) in userPosts.Zip(postDtos.Where(p => p.UserId == targetId)))
         {
-            Id = p.Id,
-            UserId = p.UserId,
-            AuthorName = p.AuthorName,
-            AuthorProfilePicture = p.AuthorProfilePicture,
-            Content = p.Content,
-            Privacy = p.Privacy,
-            ContentType = p.ContentType,
-            AllowComments = p.AllowComments,
-            ImageUrl = p.ImageUrl,
-            YouTubeVideoId = p.YouTubeVideoId,
-            CommentCount = p.CommentCount,
-            LikeCount = p.LikeCount,
-            DislikeCount = p.DislikeCount,
-            CreatedAt = p.CreatedAt,
-            TimeAgo = $"{(int)(DateTime.UtcNow - p.CreatedAt).TotalHours}h",
-            IsOwner = p.UserId == currentUserId
-        }).ToList();
+            vm.IsOwner = dto.UserId == currentUserId;
+            vm.TimeAgo = $"{(int)(DateTime.UtcNow - dto.CreatedAt).TotalHours}h";
+        }
 
         ViewBag.IsOwner = isOwner;
         ViewBag.Posts = userPosts;
@@ -101,6 +92,7 @@ public class ProfileController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(UpdateProfileDto model, IFormFile? profilePicture)
     {
         if (!ModelState.IsValid) return View(model);

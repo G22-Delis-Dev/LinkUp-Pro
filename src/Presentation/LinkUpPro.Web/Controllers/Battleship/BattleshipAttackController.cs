@@ -1,6 +1,5 @@
-using LinkUpPro.Application.DTOs.Battleship;
-using LinkUpPro.Application.Interfaces.Battleship;
-using LinkUpPro.Application.ViewModels.Battleship;
+﻿using LinkUpPro.Application.Interfaces.Battleship;
+using LinkUpPro.Domain.Enums.Battleship;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,64 +8,77 @@ namespace LinkUpPro.Web.Controllers;
 [Authorize]
 public class BattleshipAttackController : Controller
 {
-    private readonly IBattleshipGameService _gameService;
     private readonly IBattleshipAttackService _attackService;
-    private readonly IBattleshipSetupService _setupService;
+    private readonly IBattleshipGameService _gameService;
 
     public BattleshipAttackController(
-        IBattleshipGameService gameService,
         IBattleshipAttackService attackService,
-        IBattleshipSetupService setupService)
+        IBattleshipGameService gameService)
     {
-        _gameService = gameService;
         _attackService = attackService;
-        _setupService = setupService;
+        _gameService = gameService;
     }
 
-    public async Task<IActionResult> Board(Guid gameId)
+    // GET: ver tablero de ataque / refrescar estado
+    [HttpGet]
+    public async Task<IActionResult> Index(Guid gameId)
     {
-        var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
-        
-        var game = await _gameService.GetGameAsync(gameId);
-        if (game.HasError || game.Data == null)
+        var userId = GetCurrentUserId();
+
+        var isParticipant = await _gameService.IsParticipantAsync(gameId, userId);
+        if (!isParticipant) return Forbid();
+
+        await _gameService.CheckAndApplyTimeoutAsync(gameId);
+
+        var gameResult = await _gameService.GetGameAsync(gameId);
+        if (gameResult.HasError || gameResult.Data == null)
             return RedirectToAction("Index", "BattleshipGameList");
 
-        if (game.Data.Status == LinkUpPro.Domain.Enums.Battleship.GameStatus.Finished)
+        var game = gameResult.Data;
+
+        if (game.Status == GameStatus.Finished)
             return RedirectToAction("Result", "BattleshipResult", new { gameId });
 
-        var opponentId = game.Data.Player1Id == currentUserId ? game.Data.Player2Id : game.Data.Player1Id;
-        
-        // Obtenemos los ataques que hemos realizado (ataques recibidos por el oponente)
-        var opponentBoard = await _setupService.GetBoardAsync(gameId, opponentId);
-        
-        ViewBag.Game = game.Data;
-        ViewBag.OpponentBoard = opponentBoard.Data;
-        ViewBag.CurrentUserId = currentUserId;
+        if (game.Status == GameStatus.PlacingShips)
+            return RedirectToAction("Setup", "BattleshipSetup", new { gameId });
+
+        var boardResult = await _attackService.GetOpponentBoardAsync(gameId, userId);
+        if (boardResult.HasError || boardResult.Data == null)
+        {
+            TempData["Error"] = "No se pudo cargar el tablero del oponente.";
+            return RedirectToAction("Index", "BattleshipGameList");
+        }
+
+        ViewBag.Game = game;
+        ViewBag.OpponentBoard = boardResult.Data;
+        ViewBag.CurrentUserId = userId;
 
         return View("~/Views/Battleship/Attack.cshtml");
     }
 
+    // POST: registrar ataque (AJAX)
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Attack([FromBody] AttackViewModel model)
+    public async Task<IActionResult> Attack([FromBody] LinkUpPro.Application.ViewModels.Battleship.AttackViewModel model)
     {
-        var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
-        
-        var dto = new AttackDto
-        {
-            GameId = model.GameId,
-            AttackerPlayerId = currentUserId,
-            TargetX = model.TargetX,
-            TargetY = model.TargetY
-        };
+        if (!ModelState.IsValid)
+            return Json(new { success = false, message = "Datos inválidos" });
 
-        var result = await _attackService.AttackAsync(dto);
+        var userId = GetCurrentUserId();
+        var result = await _attackService.AttackAsync(model.GameId, userId, model.TargetY, model.TargetX);
 
         if (result.HasError)
-        {
             return Json(new { success = false, message = result.Error });
-        }
 
         return Json(new { success = true, result = result.Data });
     }
+
+    // POST: refrescar pantalla -> redirige al GET
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Refresh(Guid gameId)
+        => RedirectToAction(nameof(Index), new { gameId });
+
+    private Guid GetCurrentUserId()
+        => Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
 }

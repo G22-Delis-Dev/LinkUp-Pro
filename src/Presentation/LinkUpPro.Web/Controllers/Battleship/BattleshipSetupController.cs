@@ -1,4 +1,5 @@
-using LinkUpPro.Application.Interfaces.Battleship;
+﻿using LinkUpPro.Application.Interfaces.Battleship;
+using LinkUpPro.Domain.Enums.Battleship;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,33 +19,50 @@ public class BattleshipSetupController : Controller
         _setupService = setupService;
     }
 
+    [HttpGet]
     public async Task<IActionResult> Setup(Guid gameId)
     {
-        var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
-        
-        var game = await _gameService.GetGameAsync(gameId);
-        if (game.HasError || game.Data == null)
+        var currentUserId = GetCurrentUserId();
+
+        var gameResult = await _gameService.GetGameAsync(gameId);
+        if (gameResult.HasError || gameResult.Data == null)
             return RedirectToAction("Index", "BattleshipGameList");
 
-        if (game.Data.Status != LinkUpPro.Domain.Enums.Battleship.GameStatus.PlacingShips)
-        {
-            if (game.Data.Status == LinkUpPro.Domain.Enums.Battleship.GameStatus.InProgress)
-                return RedirectToAction("Board", "BattleshipAttack", new { gameId });
-                
-            return RedirectToAction("Index", "BattleshipGameList");
-        }
+        var game = gameResult.Data;
 
-        var board = await _setupService.GetBoardAsync(gameId, currentUserId);
-        
-        // Si ya colocó sus 5 barcos pero el oponente no, mostrar pantalla de espera
-        if (!board.HasError && board.Data != null && board.Data.Ships.Count >= 5)
+        if (game.Status == GameStatus.Finished || game.Status == GameStatus.Canceled)
+            return RedirectToAction("Index", "BattleshipGameList");
+
+        if (game.Status == GameStatus.InProgress)
+            return RedirectToAction("Index", "BattleshipAttack", new { gameId });
+
+        var boardResult = await _setupService.GetBoardAsync(gameId, currentUserId);
+
+        // Si ya coloco sus 5 barcos pero el oponente no, mostrar pantalla de espera
+        if (!boardResult.HasError && boardResult.Data != null && boardResult.Data.Ships.Count >= 5)
         {
             ViewBag.GameId = gameId;
             return View("~/Views/Battleship/Waiting.cshtml");
         }
 
         ViewBag.GameId = gameId;
-        ViewBag.Board = board.Data;
+        ViewBag.Board = boardResult.Data;
         return View("~/Views/Battleship/Setup.cshtml");
     }
+
+    // POST: refrescar estado de espera -> verificar si ambos listos
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Refresh(Guid gameId)
+    {
+        var bothReady = await _setupService.BothPlayersReadyAsync(gameId);
+
+        if (bothReady)
+            return RedirectToAction("Index", "BattleshipAttack", new { gameId });
+
+        return RedirectToAction(nameof(Setup), new { gameId });
+    }
+
+    private Guid GetCurrentUserId()
+        => Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
 }

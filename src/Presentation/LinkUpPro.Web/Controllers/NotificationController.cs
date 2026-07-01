@@ -20,13 +20,17 @@ public class NotificationController : Controller
         var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
         var notifications = await _notificationService.GetNotificationsAsync(currentUserId);
         
-        // Solo las no leídas
-        var unread = notifications.Where(n => !n.IsRead).ToList();
+        // Mostrar todas las notificaciones ordenadas de más reciente a más antigua
+        var orderedNotifications = notifications.OrderByDescending(n => n.CreatedAt).ToList();
         
-        return View(unread);
+        // Contador de no leídas para el badge
+        ViewBag.UnreadCount = orderedNotifications.Count(n => !n.IsRead);
+        
+        return View(orderedNotifications);
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> MarkAsRead(Guid id)
     {
         var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
@@ -36,6 +40,7 @@ public class NotificationController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> MarkAllAsRead()
     {
         var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());

@@ -65,15 +65,24 @@
 
             <div class="card-static">
                 <h3 class="text-xl font-bold border-b border-card-border pb-3 mb-4">Dirección</h3>
-                <div class="flex bg-primary p-1 rounded-xl">
-                    <button id="dirHorizontal" class="flex-1 py-2 text-center rounded-lg bg-accent/20 text-accent font-semibold transition-all">
-                        Horizontal
+                <div class="grid grid-cols-2 gap-2 bg-primary p-2 rounded-xl">
+                    <button id="dirRight" class="py-2 text-center rounded-lg bg-accent/20 text-accent font-semibold transition-all">
+                        → Derecha
                     </button>
-                    <button id="dirVertical" class="flex-1 py-2 text-center rounded-lg text-text-muted hover:text-white font-semibold transition-all">
-                        Vertical
+                    <button id="dirLeft" class="py-2 text-center rounded-lg text-text-muted hover:text-white font-semibold transition-all">
+                        ← Izquierda
+                    </button>
+                    <button id="dirDown" class="py-2 text-center rounded-lg text-text-muted hover:text-white font-semibold transition-all">
+                        ↓ Abajo
+                    </button>
+                    <button id="dirUp" class="py-2 text-center rounded-lg text-text-muted hover:text-white font-semibold transition-all">
+                        ↑ Arriba
                     </button>
                 </div>
-                <input type="hidden" id="currentDirection" value="0" /> <!-- 0: Horizontal, 1: Vertical -->
+                <input type="hidden" id="currentDirection" value="3" /> <!-- 3: Right (default) -->
+                <p class="text-xs text-text-muted mt-2 text-center">
+                    0=Arriba, 1=Abajo, 2=Izquierda, 3=Derecha
+                </p>
             </div>
 
             @if (shipsPlaced == 5)

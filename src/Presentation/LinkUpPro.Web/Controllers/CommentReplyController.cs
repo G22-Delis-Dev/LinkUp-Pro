@@ -16,6 +16,7 @@ public class CommentReplyController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(CreateCommentReplyViewModel model, string returnUrl)
     {
         if (ModelState.IsValid)
@@ -45,6 +46,7 @@ public class CommentReplyController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id, string returnUrl)
     {
         var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());

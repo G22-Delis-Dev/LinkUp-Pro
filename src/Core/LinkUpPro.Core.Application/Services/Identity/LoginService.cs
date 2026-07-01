@@ -25,8 +25,9 @@ public class LoginService : ILoginService
 
     public async Task<ServiceResponse<string>> LoginAsync(LoginDto dto)
     {
-        // 1. Buscar usuario por username (case-insensitive via Identity)
-        var appUser = await _userManager.FindByNameAsync(dto.Username);
+        // 1. Buscar usuario por username o email (case-insensitive)
+        var appUser = await _userManager.FindByNameAsync(dto.Username)
+            ?? await _userManager.FindByEmailAsync(dto.Username);
         
         if (appUser == null)
         {

@@ -1,6 +1,7 @@
-using LinkUpPro.Application.Interfaces.Battleship;
+﻿using LinkUpPro.Application.Interfaces.Battleship;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace LinkUpPro.Web.Controllers;
 
@@ -20,8 +21,8 @@ public class BattleshipGameListController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
-        
+        var currentUserId = GetCurrentUserId();
+
         var activeGames = await _gameService.GetActiveGamesAsync(currentUserId);
         var history = await _historyService.GetGameHistoryAsync(currentUserId);
 
@@ -30,4 +31,7 @@ public class BattleshipGameListController : Controller
 
         return View("~/Views/Battleship/Index.cshtml");
     }
+
+    private Guid GetCurrentUserId()
+        => Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
 }

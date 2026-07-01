@@ -1,4 +1,4 @@
-using LinkUpPro.Application.Interfaces.Battleship;
+﻿using LinkUpPro.Application.Interfaces.Battleship;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,9 +18,9 @@ public class BattleshipSurrenderController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Surrender(Guid gameId)
     {
-        var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
-        
-        var result = await _gameService.CancelGameAsync(gameId, currentUserId);
+        var currentUserId = GetCurrentUserId();
+
+        var result = await _gameService.SurrenderAsync(gameId, currentUserId);
 
         if (result.Success)
             TempData["Success"] = "Te has rendido de la partida.";
@@ -29,4 +29,7 @@ public class BattleshipSurrenderController : Controller
 
         return RedirectToAction("Index", "BattleshipGameList");
     }
+
+    private Guid GetCurrentUserId()
+        => Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
 }

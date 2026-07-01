@@ -1,4 +1,4 @@
-using LinkUpPro.Application.Interfaces.Battleship;
+﻿using LinkUpPro.Application.Interfaces.Battleship;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,21 +20,24 @@ public class BattleshipResultController : Controller
 
     public async Task<IActionResult> Result(Guid gameId)
     {
-        var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
-        
+        var currentUserId = GetCurrentUserId();
+
         var game = await _historyService.GetGameDetailsAsync(gameId);
         if (game == null) return NotFound();
 
         var opponentId = game.Player1Id == currentUserId ? game.Player2Id : game.Player1Id;
 
-        var myBoard = await _setupService.GetBoardAsync(gameId, currentUserId);
-        var opponentBoard = await _setupService.GetBoardAsync(gameId, opponentId);
+        var myBoardResult = await _setupService.GetBoardAsync(gameId, currentUserId);
+        var opponentBoardResult = await _setupService.GetBoardAsync(gameId, opponentId);
 
         ViewBag.Game = game;
-        ViewBag.OpponentBoard = opponentBoard.Data;
-        ViewBag.MyBoard = myBoard.Data;
+        ViewBag.OpponentBoard = opponentBoardResult.Data;
+        ViewBag.MyBoard = myBoardResult.Data;
         ViewBag.CurrentUserId = currentUserId;
 
         return View("~/Views/Battleship/Result.cshtml");
     }
+
+    private Guid GetCurrentUserId()
+        => Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
 }

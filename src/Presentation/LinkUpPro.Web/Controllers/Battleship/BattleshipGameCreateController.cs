@@ -1,4 +1,5 @@
-using LinkUpPro.Application.Interfaces.Battleship;
+﻿using LinkUpPro.Application.Interfaces.Battleship;
+using LinkUpPro.Application.Interfaces.Friendship;
 using LinkUpPro.Application.ViewModels.Battleship;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,16 +10,22 @@ namespace LinkUpPro.Web.Controllers;
 public class BattleshipGameCreateController : Controller
 {
     private readonly IBattleshipGameService _gameService;
+    private readonly IFriendshipService _friendshipService;
 
-    public BattleshipGameCreateController(IBattleshipGameService gameService)
+    public BattleshipGameCreateController(
+        IBattleshipGameService gameService,
+        IFriendshipService friendshipService)
     {
         _gameService = gameService;
+        _friendshipService = friendshipService;
     }
 
     [HttpGet]
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
-        // En una implementación completa aquí pasaríamos la lista de amigos sin partida activa
+        var currentUserId = GetCurrentUserId();
+        var friends = await _friendshipService.GetFriendsAsync(currentUserId);
+        ViewBag.Friends = friends;
         return View("~/Views/Battleship/Create.cshtml");
     }
 
@@ -27,10 +34,13 @@ public class BattleshipGameCreateController : Controller
     public async Task<IActionResult> Create(CreateGameViewModel model)
     {
         if (!ModelState.IsValid)
+        {
+            var currentUserId2 = GetCurrentUserId();
+            ViewBag.Friends = await _friendshipService.GetFriendsAsync(currentUserId2);
             return View("~/Views/Battleship/Create.cshtml", model);
+        }
 
-        var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
-        
+        var currentUserId = GetCurrentUserId();
         var result = await _gameService.CreateGameAsync(currentUserId, model.OpponentId);
 
         if (result.HasError || result.Data == null)
@@ -42,4 +52,7 @@ public class BattleshipGameCreateController : Controller
         TempData["Success"] = "Partida iniciada. Por favor, coloca tus barcos.";
         return RedirectToAction("Setup", "BattleshipSetup", new { gameId = result.Data.Id });
     }
+
+    private Guid GetCurrentUserId()
+        => Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
 }

@@ -1,3 +1,4 @@
+using AutoMapper;
 using LinkUpPro.Application.Interfaces.Post;
 using LinkUpPro.Application.ViewModels.Post;
 using LinkUpPro.Web.Models;
@@ -11,49 +12,36 @@ namespace LinkUpPro.Web.Controllers;
 public class HomeController : Controller
 {
     private readonly IPostQueryService _postQueryService;
+    private readonly IMapper _mapper;
 
-    public HomeController(IPostQueryService postQueryService)
+    public HomeController(IPostQueryService postQueryService, IMapper mapper)
     {
         _postQueryService = postQueryService;
+        _mapper = mapper;
     }
 
     public async Task<IActionResult> Index(string filter = "all")
     {
         var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
         var result = await _postQueryService.GetFeedAsync(currentUserId);
-        
-        var postDtos = result.HasError || result.Data == null 
-            ? new List<LinkUpPro.Application.DTOs.Post.PostDto>() 
+
+        var postDtos = result.HasError || result.Data == null
+            ? new List<LinkUpPro.Application.DTOs.Post.PostDto>()
             : result.Data.ToList();
 
         if (filter == "friends")
-        {
             postDtos = postDtos.Where(p => p.UserId != currentUserId).ToList();
-        }
         else if (filter == "mine")
-        {
             postDtos = postDtos.Where(p => p.UserId == currentUserId).ToList();
-        }
 
-        var viewModels = postDtos.Select(p => new PostViewModel
+        var viewModels = _mapper.Map<List<PostViewModel>>(postDtos);
+
+        // Campos calculados que AutoMapper ignora (configurado con opt.Ignore())
+        foreach (var (vm, dto) in viewModels.Zip(postDtos))
         {
-            Id = p.Id,
-            UserId = p.UserId,
-            AuthorName = p.AuthorName,
-            AuthorProfilePicture = p.AuthorProfilePicture,
-            Content = p.Content,
-            Privacy = p.Privacy,
-            ContentType = p.ContentType,
-            AllowComments = p.AllowComments,
-            ImageUrl = p.ImageUrl,
-            YouTubeVideoId = p.YouTubeVideoId,
-            CommentCount = p.CommentCount,
-            LikeCount = p.LikeCount,
-            DislikeCount = p.DislikeCount,
-            CreatedAt = p.CreatedAt,
-            TimeAgo = $"{(int)(DateTime.UtcNow - p.CreatedAt).TotalHours}h",
-            IsOwner = p.UserId == currentUserId
-        }).ToList();
+            vm.IsOwner = dto.UserId == currentUserId;
+            vm.TimeAgo = $"{(int)(DateTime.UtcNow - dto.CreatedAt).TotalHours}h";
+        }
 
         ViewBag.CurrentFilter = filter;
         return View(viewModels);
@@ -70,4 +58,3 @@ public class HomeController : Controller
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }
-

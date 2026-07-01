@@ -1,3 +1,4 @@
+using AutoMapper;
 using LinkUpPro.Application.Common;
 using LinkUpPro.Application.DTOs.Comment;
 using LinkUpPro.Application.Interfaces.Comment;
@@ -16,17 +17,20 @@ public class CommentService : ICommentService
     private readonly IPostRepository _postRepository;
     private readonly IUserRepository _userRepository;
     private readonly INotificationDispatchService _notificationDispatch;
+    private readonly IMapper _mapper;
 
     public CommentService(
         ICommentRepository commentRepository,
         IPostRepository postRepository,
         IUserRepository userRepository,
-        INotificationDispatchService notificationDispatch)
+        INotificationDispatchService notificationDispatch,
+        IMapper mapper)
     {
         _commentRepository = commentRepository;
         _postRepository = postRepository;
         _userRepository = userRepository;
         _notificationDispatch = notificationDispatch;
+        _mapper = mapper;
     }
 
     public async Task<ServiceResponse<CommentDto>> CreateCommentAsync(CreateCommentDto dto)
@@ -95,16 +99,6 @@ public class CommentService : ICommentService
             .Include(c => c.Replies)
             .ToListAsync();
 
-        return comments.Select(c => new CommentDto
-        {
-            Id = c.Id,
-            PostId = c.PostId,
-            UserId = c.UserId,
-            AuthorName = $"{c.User.FirstName} {c.User.LastName}",
-            AuthorProfilePicture = c.User.ProfilePicturePath,
-            Content = c.Content,
-            CreatedAt = c.CreatedAt,
-            ReplyCount = c.Replies.Count
-        }).ToList();
+        return _mapper.Map<List<CommentDto>>(comments);
     }
 }

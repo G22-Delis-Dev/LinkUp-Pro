@@ -31,8 +31,25 @@
                     var hasShip = false;
                     foreach(var s in Model.Ships)
                     {
-                        if(s.Direction == LinkUpPro.Domain.Enums.Battleship.ShipDirection.Horizontal && y == s.StartY && x >= s.StartX && x < s.StartX + (int)s.Size) hasShip = true;
-                        if(s.Direction == LinkUpPro.Domain.Enums.Battleship.ShipDirection.Vertical && x == s.StartX && y >= s.StartY && y < s.StartY + (int)s.Size) hasShip = true;
+                        // Calcular si la celda actual está ocupada por el barco según su dirección
+                        var dir = s.Direction;
+                        for (int i = 0; i < (int)s.Size; i++)
+                        {
+                            var (shipY, shipX) = dir switch
+                            {
+                                LinkUpPro.Domain.Enums.Battleship.ShipDirection.Right => (s.StartY, s.StartX + i),
+                                LinkUpPro.Domain.Enums.Battleship.ShipDirection.Left => (s.StartY, s.StartX - i),
+                                LinkUpPro.Domain.Enums.Battleship.ShipDirection.Down => (s.StartY + i, s.StartX),
+                                LinkUpPro.Domain.Enums.Battleship.ShipDirection.Up => (s.StartY - i, s.StartX),
+                                _ => (s.StartY, s.StartX)
+                            };
+                            if (x == shipX && y == shipY)
+                            {
+                                hasShip = true;
+                                break;
+                            }
+                        }
+                        if (hasShip) break;
                     }
 
                     string cellClass = "bg-black/20";

@@ -1,10 +1,12 @@
 using LinkUpPro.Application.DTOs.Auth;
 using LinkUpPro.Application.Interfaces.Identity;
 using LinkUpPro.Application.ViewModels.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LinkUpPro.Web.Controllers;
 
+[AllowAnonymous]
 public class AuthController : Controller
 {
     private readonly ILoginService _loginService;
@@ -47,6 +49,7 @@ public class AuthController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
     {
         if (!ModelState.IsValid)
@@ -55,7 +58,8 @@ public class AuthController : Controller
         var dto = new LoginDto
         {
             Username = model.Username,
-            Password = model.Password
+            Password = model.Password,
+            RememberMe = model.RememberMe
         };
 
         var result = await _loginService.LoginAsync(dto);
@@ -70,7 +74,7 @@ public class AuthController : Controller
 
         ModelState.AddModelError(string.Empty, result.Error ?? "Error al iniciar sesión.");
         
-        if (result.Error?.Contains("activada") == true)
+        if (result.Error?.Contains("inactiva") == true)
         {
             ViewBag.ShowResendActivation = true;
             ViewBag.Username = model.Username;
@@ -89,6 +93,7 @@ public class AuthController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
         if (!ModelState.IsValid)
@@ -139,6 +144,7 @@ public class AuthController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ResendActivation(string username)
     {
         // En una app real, si sólo tenemos username del form, buscaríamos el email. 
@@ -161,6 +167,7 @@ public class AuthController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
     {
         if (!ModelState.IsValid) return View(model);
@@ -180,6 +187,7 @@ public class AuthController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
     {
         if (!ModelState.IsValid) return View(model);
