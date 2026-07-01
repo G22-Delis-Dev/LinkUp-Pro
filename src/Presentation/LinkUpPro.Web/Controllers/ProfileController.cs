@@ -4,6 +4,7 @@ using LinkUpPro.Application.Interfaces.Friendship;
 using LinkUpPro.Application.Interfaces.Post;
 using LinkUpPro.Application.Interfaces.User;
 using LinkUpPro.Application.ViewModels.Post;
+using LinkUpPro.Application.ViewModels.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -43,13 +44,13 @@ public class ProfileController : Controller
         if (profileResult.HasError || profileResult.Data == null) return NotFound();
 
         var feedResult = await _postQueryService.GetFeedAsync(targetId);
-        var postDtos = feedResult.HasError || feedResult.Data == null 
-            ? new List<LinkUpPro.Application.DTOs.Post.PostDto>() 
+        var postDtos = feedResult.HasError || feedResult.Data == null
+            ? new List<LinkUpPro.Application.DTOs.Post.PostDto>()
             : feedResult.Data.ToList();
 
-        // Filtrar posts propios del usuario para su muro
-        var userPosts = _mapper.Map<List<PostViewModel>>(postDtos.Where(p => p.UserId == targetId).ToList());
-        foreach (var (vm, dto) in userPosts.Zip(postDtos.Where(p => p.UserId == targetId)))
+        var filteredDtos = postDtos.Where(p => p.UserId == targetId).ToList();
+        var userPosts = _mapper.Map<List<PostViewModel>>(filteredDtos);
+        foreach (var (vm, dto) in userPosts.Zip(filteredDtos))
         {
             vm.IsOwner = dto.UserId == currentUserId;
             vm.TimeAgo = $"{(int)(DateTime.UtcNow - dto.CreatedAt).TotalHours}h";
@@ -57,7 +58,7 @@ public class ProfileController : Controller
 
         ViewBag.IsOwner = isOwner;
         ViewBag.Posts = userPosts;
-        
+
         var friends = await _friendshipService.GetFriendsAsync(targetId);
         ViewBag.FriendsCount = friends.Count;
 
@@ -65,7 +66,7 @@ public class ProfileController : Controller
         {
             var areFriends = await _friendshipService.AreFriendsAsync(currentUserId, targetId);
             ViewBag.AreFriends = areFriends;
-            
+
             var mutualFriends = await _mutualFriendService.GetMutualFriendsAsync(currentUserId, targetId);
             ViewBag.MutualFriendsCount = mutualFriends.Count;
         }
@@ -78,10 +79,11 @@ public class ProfileController : Controller
     {
         var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
         var profileResult = await _userService.GetProfileAsync(currentUserId);
-        
+
         if (profileResult.HasError || profileResult.Data == null) return NotFound();
 
-        var model = new UpdateProfileDto
+        // Mapear UserProfileDto → UpdateProfileViewModel (campos editables solamente)
+        var model = new UpdateProfileViewModel
         {
             FirstName = profileResult.Data.FirstName,
             LastName = profileResult.Data.LastName,
@@ -93,20 +95,26 @@ public class ProfileController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(UpdateProfileDto model, IFormFile? profilePicture)
+    public async Task<IActionResult> Edit(UpdateProfileViewModel model)
     {
         if (!ModelState.IsValid) return View(model);
 
         var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
-        
-        var result = await _userService.UpdateProfileAsync(currentUserId, model);
-        
+
+        // Mapear ViewModel → DTO para el servicio
+        var dto = _mapper.Map<UpdateProfileDto>(model);
+        var result = await _userService.UpdateProfileAsync(currentUserId, dto);
+
         if (result.Success)
         {
-            if (profilePicture != null)
+            if (model.ProfilePicture != null)
             {
-                var stream = profilePicture.OpenReadStream();
-                await _userService.ChangeProfilePictureAsync(currentUserId, stream, profilePicture.ContentType, profilePicture.FileName);
+                var stream = model.ProfilePicture.OpenReadStream();
+                await _userService.ChangeProfilePictureAsync(
+                    currentUserId,
+                    stream,
+                    model.ProfilePicture.ContentType,
+                    model.ProfilePicture.FileName);
             }
 
             TempData["Success"] = "Perfil actualizado exitosamente.";

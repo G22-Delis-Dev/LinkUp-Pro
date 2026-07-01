@@ -16,6 +16,7 @@ public class ReactionController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Toggle([FromBody] ToggleReactionViewModel model)
     {
         if (!ModelState.IsValid) return BadRequest();

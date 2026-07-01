@@ -1,4 +1,4 @@
-@model LinkUpPro.Application.DTOs.User.UpdateProfileDto
+@model LinkUpPro.Application.ViewModels.User.UpdateProfileViewModel
 @{
     ViewData["Title"] = "Editar Perfil";
     Layout = "_Layout";
@@ -12,6 +12,7 @@
         </div>
 
         <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="bg-red-500/10 border border-red-500/50 text-red-500 rounded-lg p-3 mb-6 text-sm"></div>
 
             <div class="flex flex-col md:flex-row gap-6 mb-6">
@@ -32,10 +33,10 @@
                 <input asp-for="PhoneNumber" class="input-custom" placeholder="809-555-1234" />
                 <span asp-validation-for="PhoneNumber" class="text-red-500 text-xs mt-1 block"></span>
             </div>
-            
+
             <div class="mb-8">
-                <label class="label-custom">Foto de Perfil</label>
-                <input type="file" name="profilePicture" class="input-custom" accept="image/jpeg,image/png,image/webp" />
+                <label asp-for="ProfilePicture" class="label-custom">Foto de Perfil</label>
+                <input asp-for="ProfilePicture" type="file" class="input-custom" accept="image/jpeg,image/png,image/webp" />
                 <p class="text-xs text-text-muted mt-2">Formatos aceptados: JPG, PNG, WEBP. Tamaño máximo recomendado: 2MB.</p>
             </div>
 

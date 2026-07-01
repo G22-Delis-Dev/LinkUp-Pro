@@ -1,23 +1,30 @@
+using LinkUpPro.Domain.Interfaces.Repositories.User;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Authentication;
 using LinkUpPro.Infrastructure.Identity.Entities;
 
 namespace LinkUpPro.Web.Filters;
 
-// Filtro que valida si los usuarios autenticados tienen cuentas activas.
-// Las cuentas inactivas se cierran sesión automáticamente.
+/// <summary>
+/// Filtro global que valida en cada request que:
+/// 1. El usuario existe en Identity.
+/// 2. La cuenta de dominio esté activa (IsActive = true).
+/// Las cuentas inexistentes o inactivas se cierran sesión automáticamente.
+/// </summary>
 public class ActiveAccountFilter : IAsyncActionFilter
 {
     private readonly SignInManager<AppUser> _signInManager;
+    private readonly IUserRepository _userRepository;
     private readonly ILogger<ActiveAccountFilter> _logger;
 
     public ActiveAccountFilter(
         SignInManager<AppUser> signInManager,
+        IUserRepository userRepository,
         ILogger<ActiveAccountFilter> logger)
     {
         _signInManager = signInManager;
+        _userRepository = userRepository;
         _logger = logger;
     }
 
@@ -25,35 +32,44 @@ public class ActiveAccountFilter : IAsyncActionFilter
         ActionExecutingContext context,
         ActionExecutionDelegate next)
     {
-        // Only validate if the user is authenticated
         if (context.HttpContext.User.Identity?.IsAuthenticated == true)
         {
+            // 1. Verificar que exista en Identity
             var appUser = await _signInManager.UserManager.GetUserAsync(context.HttpContext.User);
 
-            // If Identity user not found, sign out and redirect
             if (appUser == null)
             {
-                _logger.LogWarning("Authenticated user not found in Identity system");
-                
-                // Sign out the user
-                await _signInManager.SignOutAsync();
-
-                // Redirect to login with message
-                context.Result = new RedirectToActionResult(
-                    "Login",
-                    "Auth",
-                    new { message = "Su sesión ha expirado. Por favor, inicie sesión nuevamente." }
-                );
+                _logger.LogWarning("Usuario autenticado no encontrado en Identity. Se cierra la sesión.");
+                await ForceSignOut(context, "Su sesión ha expirado. Por favor, inicie sesión nuevamente.");
                 return;
             }
 
-            // TODO: Additional validation with domain User.IsActive
-            // should be implemented when integrating with domain services:
-            // var domainUser = await _userRepository.GetByIdAsync(userId);
-            // if (domainUser == null || !domainUser.IsActive) { ... }
+            // 2. Verificar IsActive en el dominio usando el claim "uid"
+            var uidClaim = context.HttpContext.User.FindFirst("uid")?.Value;
+            if (Guid.TryParse(uidClaim, out var domainUserId))
+            {
+                var domainUser = await _userRepository.GetByIdAsync(domainUserId);
+
+                if (domainUser == null || !domainUser.IsActive)
+                {
+                    _logger.LogWarning(
+                        "Cuenta de dominio inactiva o no encontrada para uid={UserId}. Se cierra la sesión.",
+                        domainUserId);
+                    await ForceSignOut(context, "Su cuenta ha sido desactivada. Contacte al administrador.");
+                    return;
+                }
+            }
         }
 
-        // Continue with the action execution
         await next();
+    }
+
+    private async Task ForceSignOut(ActionExecutingContext context, string message)
+    {
+        await _signInManager.SignOutAsync();
+        context.Result = new RedirectToActionResult(
+            "Login",
+            "Auth",
+            new { message });
     }
 }
