@@ -70,7 +70,7 @@ public class BattleshipAttackService : IBattleshipAttackService
             game.WinnerId = timeoutWinnerId;
             await _gameRepo.UpdateAsync(game);
 
-            return ServiceResponse<AttackResultDto>.Failure("La partida finalizo por inactividad.");
+            return ServiceResponse<AttackResultDto>.Failure("La partida finalizó por inactividad.");
         }
 
         // Validar reglas

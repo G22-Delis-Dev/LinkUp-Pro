@@ -9,13 +9,13 @@ public class PlaceShipViewModelValidator : AbstractValidator<PlaceShipViewModel>
     public PlaceShipViewModelValidator()
     {
         RuleFor(x => x.GameId)
-            .NotEmpty().WithMessage("El ID del juego es requerido.");
+            .NotEmpty().WithMessage("La partida no es válida.");
 
         RuleFor(x => x.StartX)
-            .InclusiveBetween(0, 9).WithMessage("La coordenada X debe estar entre 0 y 9.");
+            .InclusiveBetween(0, 11).WithMessage("La posición del barco está fuera del tablero.");
 
         RuleFor(x => x.StartY)
-            .InclusiveBetween(0, 9).WithMessage("La coordenada Y debe estar entre 0 y 9.");
+            .InclusiveBetween(0, 11).WithMessage("La posición del barco está fuera del tablero.");
 
         RuleFor(x => x.Size)
             .IsInEnum().WithMessage("Tamaño de barco no válido.");

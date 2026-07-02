@@ -8,7 +8,7 @@ public class CreateCommentReplyViewModelValidator : AbstractValidator<CreateComm
     public CreateCommentReplyViewModelValidator()
     {
         RuleFor(x => x.CommentId)
-            .NotEmpty().WithMessage("El ID del comentario es requerido.");
+            .NotEmpty().WithMessage("Selecciona un comentario válido.");
 
         RuleFor(x => x.Content)
             .NotEmpty().WithMessage("La respuesta no puede estar vacía.")

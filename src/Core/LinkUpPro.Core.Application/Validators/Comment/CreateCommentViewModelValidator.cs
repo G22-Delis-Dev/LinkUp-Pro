@@ -8,7 +8,7 @@ public class CreateCommentViewModelValidator : AbstractValidator<CreateCommentVi
     public CreateCommentViewModelValidator()
     {
         RuleFor(x => x.PostId)
-            .NotEmpty().WithMessage("El ID del post es requerido.");
+            .NotEmpty().WithMessage("Selecciona una publicación válida.");
 
         RuleFor(x => x.Content)
             .NotEmpty().WithMessage("El comentario no puede estar vacío.")

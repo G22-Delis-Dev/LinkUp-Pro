@@ -35,7 +35,7 @@ public class CommentReplyController : Controller
             if (!result.HasError)
                 TempData["Success"] = "Respuesta agregada.";
             else
-                TempData["Error"] = result.Error;
+                TempData["Error"] = result.Error ?? "No se pudo agregar la respuesta. Inténtalo de nuevo.";
         }
         else
         {

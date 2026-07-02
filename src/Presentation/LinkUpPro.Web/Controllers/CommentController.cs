@@ -35,7 +35,7 @@ public class CommentController : Controller
             if (!result.HasError)
                 TempData["Success"] = "Comentario agregado.";
             else
-                TempData["Error"] = result.Error;
+                TempData["Error"] = result.Error ?? "No se pudo agregar el comentario. Inténtalo de nuevo.";
         }
         else
         {

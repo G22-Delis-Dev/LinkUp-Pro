@@ -101,7 +101,7 @@ public class BattleshipGameService : IBattleshipGameService
             return BaseResult.Fail("No eres participante de esta partida.");
 
         if (game.Status == GameStatus.Finished || game.Status == GameStatus.Canceled)
-            return BaseResult.Fail("La partida ya termino.");
+            return BaseResult.Fail("La partida ya terminó.");
 
         var winnerId = surrenderingUserId == game.Player1Id
             ? game.Player2Id

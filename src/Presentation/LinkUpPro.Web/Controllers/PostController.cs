@@ -89,7 +89,7 @@ public class PostController : Controller
             return RedirectToAction("Index", "Home");
         }
 
-        ModelState.AddModelError(string.Empty, result.Errors.FirstOrDefault() ?? "Error");
+        ModelState.AddModelError(string.Empty, result.Errors.FirstOrDefault() ?? "No se pudo actualizar la publicación. Inténtalo de nuevo.");
         return View(model);
     }
 
@@ -103,7 +103,7 @@ public class PostController : Controller
         if (result.Success)
             TempData["Success"] = "Publicación eliminada.";
         else
-            TempData["Error"] = result.Errors.FirstOrDefault();
+            TempData["Error"] = result.Errors.FirstOrDefault() ?? "No se pudo eliminar la publicación. Inténtalo de nuevo.";
 
         return RedirectToAction("Index", "Home");
     }

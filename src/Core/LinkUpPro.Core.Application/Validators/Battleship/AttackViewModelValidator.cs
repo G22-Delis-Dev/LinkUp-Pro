@@ -8,12 +8,12 @@ public class AttackViewModelValidator : AbstractValidator<AttackViewModel>
     public AttackViewModelValidator()
     {
         RuleFor(x => x.GameId)
-            .NotEmpty().WithMessage("El ID del juego es requerido.");
+            .NotEmpty().WithMessage("La partida no es válida.");
 
         RuleFor(x => x.TargetX)
-            .InclusiveBetween(0, 9).WithMessage("La coordenada X debe estar entre 0 y 9.");
+            .InclusiveBetween(0, 11).WithMessage("Coordenada de ataque fuera del tablero.");
 
         RuleFor(x => x.TargetY)
-            .InclusiveBetween(0, 9).WithMessage("La coordenada Y debe estar entre 0 y 9.");
+            .InclusiveBetween(0, 11).WithMessage("Coordenada de ataque fuera del tablero.");
     }
 }

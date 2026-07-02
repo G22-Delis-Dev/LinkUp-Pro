@@ -8,7 +8,7 @@ public class EditPostViewModelValidator : AbstractValidator<EditPostViewModel>
     public EditPostViewModelValidator()
     {
         RuleFor(x => x.Id)
-            .NotEmpty().WithMessage("El ID del post es requerido.");
+            .NotEmpty().WithMessage("La publicación no es válida.");
 
         RuleFor(x => x.Content)
             .NotEmpty().WithMessage("El contenido del post es requerido.")

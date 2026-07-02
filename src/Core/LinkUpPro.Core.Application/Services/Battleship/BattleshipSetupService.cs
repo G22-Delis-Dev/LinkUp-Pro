@@ -58,7 +58,17 @@ public class BattleshipSetupService : IBattleshipSetupService
         };
 
         if (outOfBounds)
-            return ServiceResponse<ShipDto>.Failure($"El barco sale del tablero en dirección {dto.Direction}.");
+        {
+            var dirSpanish = dto.Direction switch
+            {
+                ShipDirection.Right => "derecha",
+                ShipDirection.Left  => "izquierda",
+                ShipDirection.Down  => "abajo",
+                ShipDirection.Up    => "arriba",
+                _                   => dto.Direction.ToString()
+            };
+            return ServiceResponse<ShipDto>.Failure($"El barco sale del tablero hacia {dirSpanish}.");
+        }
 
         // Verificar colisiones (excluir el barco actual si ya estaba colocado)
         var cellsWithoutCurrentShip = occupiedCells.ToList();

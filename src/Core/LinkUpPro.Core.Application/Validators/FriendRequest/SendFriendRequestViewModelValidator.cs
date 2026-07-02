@@ -8,6 +8,6 @@ public class SendFriendRequestViewModelValidator : AbstractValidator<SendFriendR
     public SendFriendRequestViewModelValidator()
     {
         RuleFor(x => x.ReceiverId)
-            .NotEmpty().WithMessage("El ID del usuario destinatario es requerido.");
+            .NotEmpty().WithMessage("Debes seleccionar un usuario para enviar la solicitud.");
     }
 }
