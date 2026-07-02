@@ -19,12 +19,13 @@ $(document).ready(function () {
 function initSetupBoard() {
     renderGrid('#setupBoard', true);
     
-    // Cargar barcos ya colocados
+    // Cargar barcos ya colocados (filtrar los que tienen coordenadas -1 = sin posicionar)
     if (window.initialShips && window.initialShips.length > 0) {
-        placedShipsData = window.initialShips;
-        placedShipsData.forEach(ship => {
-            markShipOnGrid(ship.StartX, ship.StartY, ship.Size, ship.Direction);
-            disableShipButton(ship.Size);
+        const placedOnly = window.initialShips.filter(s => s.startX >= 0 && s.startY >= 0);
+        placedShipsData = placedOnly;
+        placedOnly.forEach(ship => {
+            markShipOnGrid(ship.startX, ship.startY, ship.size, ship.direction);
+            disableShipButton(ship.size);
         });
         updateShipsCount();
     }

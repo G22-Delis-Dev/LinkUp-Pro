@@ -20,8 +20,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     // Cookie security settings
     options.Cookie.HttpOnly = true;         // No accesible desde JavaScript
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Solo HTTPS
-    options.Cookie.SameSite = SameSiteMode.Strict;           // Protección CSRF
+    // En desarrollo usamos SameAsRequest para permitir HTTP local; en producción siempre HTTPS
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Lax;  // Lax permite navegación normal; Strict bloqueaba redirects
 
     // Sesión expira tras 30 minutos de inactividad
     options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
@@ -39,7 +42,9 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
 

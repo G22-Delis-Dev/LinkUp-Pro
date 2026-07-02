@@ -24,7 +24,7 @@ namespace LinkUpPro.Infrastructure.Persistence.Repositories
 
         public async Task<IReadOnlyList<BattleshipShip>> GetPlacedByBoardAsync(Guid boardId)
             => await _dbSet
-                   .Where(s => s.BoardId == boardId)
+                   .Where(s => s.BoardId == boardId && s.StartCoordinateX >= 0 && s.StartCoordinateY >= 0)
                    .ToListAsync();
 
         // Retorna todas las celdas ocupadas como lista de (row, col)

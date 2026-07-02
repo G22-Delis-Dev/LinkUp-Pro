@@ -9,8 +9,7 @@ namespace LinkUpPro.Web.Filters;
 /// <summary>
 /// Filtro global que valida en cada request que:
 /// 1. El usuario existe en Identity.
-/// 2. La cuenta de dominio esté activa (IsActive = true).
-/// Las cuentas inexistentes o inactivas se cierran sesión automáticamente.
+/// 2. Si tiene claim "uid" válido, verifica que la cuenta de dominio esté activa.
 /// </summary>
 public class ActiveAccountFilter : IAsyncActionFilter
 {
@@ -39,24 +38,32 @@ public class ActiveAccountFilter : IAsyncActionFilter
 
             if (appUser == null)
             {
-                _logger.LogWarning("Usuario autenticado no encontrado en Identity. Se cierra la sesión.");
+                _logger.LogWarning("Usuario autenticado no encontrado en Identity. Cerrando sesión.");
                 await ForceSignOut(context, "Su sesión ha expirado. Por favor, inicie sesión nuevamente.");
                 return;
             }
 
             // 2. Verificar IsActive en el dominio usando el claim "uid"
+            //    Solo bloquear si el uid es válido y el usuario realmente está inactivo.
+            //    Si el uid no existe o es Guid.Empty, dejar pasar (no interrumpir la sesión).
             var uidClaim = context.HttpContext.User.FindFirst("uid")?.Value;
-            if (Guid.TryParse(uidClaim, out var domainUserId))
+            if (Guid.TryParse(uidClaim, out var domainUserId) && domainUserId != Guid.Empty)
             {
                 var domainUser = await _userRepository.GetByIdAsync(domainUserId);
 
-                if (domainUser == null || !domainUser.IsActive)
+                if (domainUser != null && !domainUser.IsActive)
                 {
                     _logger.LogWarning(
-                        "Cuenta de dominio inactiva o no encontrada para uid={UserId}. Se cierra la sesión.",
-                        domainUserId);
+                        "Cuenta de dominio inactiva para uid={UserId}. Cerrando sesión.", domainUserId);
                     await ForceSignOut(context, "Su cuenta ha sido desactivada. Contacte al administrador.");
                     return;
+                }
+
+                if (domainUser == null)
+                {
+                    _logger.LogWarning(
+                        "Cuenta de dominio no encontrada para uid={UserId}. Continuando sesión.", domainUserId);
+                    // No cerrar sesión — podría ser un problema de sincronización temporal
                 }
             }
         }

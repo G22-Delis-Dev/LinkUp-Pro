@@ -22,6 +22,8 @@ namespace LinkUpPro.Infrastructure.Persistence.Repositories
                        (g.Player1Id == userId || g.Player2Id == userId) &&
                        g.Status != GameStatus.Finished)
                    .Include(g => g.Boards)
+                   .Include(g => g.Player1)
+                   .Include(g => g.Player2)
                    .OrderByDescending(g => g.CreatedAt)
                    .ToListAsync();
 

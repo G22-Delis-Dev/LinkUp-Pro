@@ -81,7 +81,9 @@
                             
                             <tr class="border-b border-card-border/50 hover:bg-white/5 transition-colors">
                                 <td class="p-4 font-mono text-sm">@game.Id.ToString().Substring(0,8)...</td>
-                                <td class="p-4 font-medium">Jugador @opponentId.ToString().Substring(0,5)</td>
+                                <td class="p-4 font-medium">
+                                    @(game.Player1Id == currentUserId ? game.Player2Name : game.Player1Name)
+                                </td>
                                 <td class="p-4">
                                     @if (game.Status == LinkUpPro.Domain.Enums.Battleship.GameStatus.Canceled)
                                     {

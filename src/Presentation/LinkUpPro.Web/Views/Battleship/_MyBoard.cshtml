@@ -29,7 +29,7 @@
                     
                     // Buscar si hay barco (solo para pintar si no queremos ocultar)
                     var hasShip = false;
-                    foreach(var s in Model.Ships)
+                    foreach(var s in Model.Ships.Where(s => s.StartX >= 0 && s.StartY >= 0))
                     {
                         // Calcular si la celda actual está ocupada por el barco según su dirección
                         var dir = s.Direction;

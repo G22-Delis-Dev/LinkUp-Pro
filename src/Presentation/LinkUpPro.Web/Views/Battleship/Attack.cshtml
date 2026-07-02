@@ -1,6 +1,6 @@
 @{
     ViewData["Title"] = "Batalla - Battleship";
-    var game = ViewBag.Game as LinkUpPro.Domain.Entities.Battleship.BattleshipGame;
+    var game = ViewBag.Game as LinkUpPro.Application.DTOs.Battleship.BattleshipGameDto;
     var opponentBoard = ViewBag.OpponentBoard as LinkUpPro.Application.DTOs.Battleship.BattleshipBoardDto;
     var currentUserId = (Guid)ViewBag.CurrentUserId;
     var isMyTurn = game?.CurrentTurnPlayerId == currentUserId;
@@ -148,13 +148,14 @@
         function attackCell(x, y) {
             if (!isMyTurn) return;
             
-            let token = $('input[name="__RequestVerificationToken"]').val();
+            let token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                     || $('input[name="__RequestVerificationToken"]').val();
             
             $.ajax({
                 url: attackUrl,
                 type: 'POST',
                 contentType: 'application/json',
-                headers: { 'RequestVerificationToken': token },
+                headers: { 'X-CSRF-TOKEN': token },
                 data: JSON.stringify({
                     GameId: gameId,
                     TargetX: x,

@@ -38,15 +38,10 @@ public class BattleshipSetupService : IBattleshipSetupService
 
         var ships = await _shipRepo.GetByBoardAsync(board.Id);
 
-        // Buscar un barco sin colocar del tamano indicado
-        var ship = ships.FirstOrDefault(s => (int)s.Size == (int)dto.Size && s.StartCoordinateX == 0 && s.StartCoordinateY == 0 && !s.IsSunk);
+        // Buscar un barco sin colocar del tamaño indicado (coordenadas -1 = no posicionado)
+        var ship = ships.FirstOrDefault(s => (int)s.Size == (int)dto.Size && s.StartCoordinateX == -1 && s.StartCoordinateY == -1);
         if (ship == null)
-        {
-            // Buscar por tamano sin importar posicion (primer no colocado)
-            ship = ships.FirstOrDefault(s => (int)s.Size == (int)dto.Size);
-        }
-        if (ship == null)
-            return ServiceResponse<ShipDto>.Failure("Barco no encontrado para ese tamano.");
+            return ServiceResponse<ShipDto>.Failure("Barco no encontrado para ese tamaño o ya fue posicionado.");
 
         // Validar colision
         var occupiedCells = await _shipRepo.GetOccupiedCellsAsync(board.Id);
@@ -109,15 +104,16 @@ public class BattleshipSetupService : IBattleshipSetupService
             return BaseResult.Fail("Tablero no encontrado.");
 
         var ships = await _shipRepo.GetByBoardAsync(board.Id);
-        if (ships.Count < 5)
+        var placedShips = ships.Where(s => s.StartCoordinateX >= 0 && s.StartCoordinateY >= 0).ToList();
+        if (placedShips.Count < 5)
             return BaseResult.Fail("Debes colocar los 5 barcos antes de confirmar.");
 
-        // Si ambos jugadores estan listos, activar la partida
+        // Verificar si el oponente ya confirmó (ambos tienen 5 barcos)
         var bothReady = await _boardRepo.BothPlayersReadyAsync(gameId);
         if (bothReady)
         {
             var game = await _gameRepo.GetByIdAsync(gameId);
-            if (game != null)
+            if (game != null && game.Status == GameStatus.PlacingShips)
             {
                 game.Status = GameStatus.InProgress;
                 game.CurrentTurnPlayerId = game.Player1Id;

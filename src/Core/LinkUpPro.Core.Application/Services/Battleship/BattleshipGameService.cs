@@ -1,11 +1,14 @@
 ﻿using LinkUpPro.Application.Common;
 using LinkUpPro.Application.DTOs.Battleship;
 using LinkUpPro.Application.Interfaces.Battleship;
+using LinkUpPro.Application.Interfaces.Notification;
 using LinkUpPro.Domain.Entities.Battleship;
 using LinkUpPro.Domain.Enums.Battleship;
+using LinkUpPro.Domain.Enums.Notification;
 using LinkUpPro.Domain.Exceptions;
 using LinkUpPro.Domain.Interfaces.Repositories.Battleship;
 using LinkUpPro.Domain.Interfaces.Repositories.Friendship;
+using LinkUpPro.Domain.Interfaces.Repositories.User;
 using LinkUpPro.Domain.Rules.Battleship.Game;
 
 namespace LinkUpPro.Application.Services.Battleship;
@@ -16,6 +19,8 @@ public class BattleshipGameService : IBattleshipGameService
     private readonly IBattleshipBoardRepository _boardRepo;
     private readonly IBattleshipShipRepository _shipRepo;
     private readonly IFriendshipRepository _friendshipRepo;
+    private readonly INotificationDispatchService _notificationDispatch;
+    private readonly IUserRepository _userRepository;
 
     private static readonly int[] DefaultShipSizes = { 2, 3, 3, 4, 5 };
 
@@ -23,12 +28,16 @@ public class BattleshipGameService : IBattleshipGameService
         IBattleshipGameRepository gameRepo,
         IBattleshipBoardRepository boardRepo,
         IBattleshipShipRepository shipRepo,
-        IFriendshipRepository friendshipRepo)
+        IFriendshipRepository friendshipRepo,
+        INotificationDispatchService notificationDispatch,
+        IUserRepository userRepository)
     {
         _gameRepo = gameRepo;
         _boardRepo = boardRepo;
         _shipRepo = shipRepo;
         _friendshipRepo = friendshipRepo;
+        _notificationDispatch = notificationDispatch;
+        _userRepository = userRepository;
     }
 
     public async Task<ServiceResponse<BattleshipGameDto>> CreateGameAsync(Guid creatorId, Guid opponentId)
@@ -55,6 +64,15 @@ public class BattleshipGameService : IBattleshipGameService
 
             await CreateBoardAsync(game.Id, creatorId);
             await CreateBoardAsync(game.Id, opponentId);
+
+            // Notificar al oponente que recibió un desafío
+            var creator = await _userRepository.GetByIdAsync(creatorId);
+            var creatorName = creator != null ? $"{creator.FirstName} {creator.LastName}" : "Un jugador";
+            await _notificationDispatch.SendNotificationAsync(
+                opponentId,
+                NotificationType.BattleshipChallenge,
+                $"{creatorName} te ha desafiado a una partida de Battleship.",
+                game.Id.ToString());
 
             var dto = new BattleshipGameDto
             {
@@ -165,7 +183,9 @@ public class BattleshipGameService : IBattleshipGameService
             {
                 Id = Guid.NewGuid(),
                 BoardId = board.Id,
-                Size = (ShipSize)size
+                Size = (ShipSize)size,
+                StartCoordinateX = -1,  // -1 = no posicionado todavía
+                StartCoordinateY = -1
             });
         }
     }

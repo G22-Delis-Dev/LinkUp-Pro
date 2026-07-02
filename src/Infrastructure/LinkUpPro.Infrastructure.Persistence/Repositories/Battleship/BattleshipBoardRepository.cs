@@ -19,14 +19,14 @@ namespace LinkUpPro.Infrastructure.Persistence.Repositories
             Guid gameId, Guid ownerId)
             => await _dbSet
                    .Include(b => b.Ships)
+                   .Include(b => b.ReceivedAttacks)
                    .FirstOrDefaultAsync(b =>
                        b.GameId == gameId &&
                        b.PlayerId == ownerId);
 
         public async Task<bool> BothPlayersReadyAsync(Guid gameId)
             => await _dbSet
-                   .CountAsync(b =>
-                       b.GameId == gameId &&
-                       b.Ships.Count == 5) == 2;
+                   .Where(b => b.GameId == gameId)
+                   .CountAsync(b => b.Ships.Count(s => s.StartCoordinateX >= 0 && s.StartCoordinateY >= 0) == 5) == 2;
     }
 }

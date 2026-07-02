@@ -38,8 +38,9 @@ public class BattleshipSetupController : Controller
 
         var boardResult = await _setupService.GetBoardAsync(gameId, currentUserId);
 
-        // Si ya coloco sus 5 barcos pero el oponente no, mostrar pantalla de espera
-        if (!boardResult.HasError && boardResult.Data != null && boardResult.Data.Ships.Count >= 5)
+        // Si ya colocó sus 5 barcos (posición >= 0), mostrar pantalla de espera
+        var placedCount = boardResult.Data?.Ships.Count(s => s.StartX >= 0 && s.StartY >= 0) ?? 0;
+        if (!boardResult.HasError && boardResult.Data != null && placedCount >= 5)
         {
             ViewBag.GameId = gameId;
             return View("~/Views/Battleship/Waiting.cshtml");

@@ -57,7 +57,7 @@
                                 </span>
                                 <span class="text-xs text-text-muted">ID: @game.Id.ToString().Substring(0, 8)</span>
                             </div>
-                            <h3 class="text-lg font-bold">vs Jugador @opponentId.ToString().Substring(0, 5)</h3>
+                            <h3 class="text-lg font-bold">vs @(game.Player1Id == currentUserId ? game.Player2Name : game.Player1Name)</h3>
                             
                             @if (game.Status == LinkUpPro.Domain.Enums.Battleship.GameStatus.InProgress)
                             {

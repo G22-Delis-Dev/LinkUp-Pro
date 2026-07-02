@@ -2,7 +2,7 @@
     ViewData["Title"] = "Colocar Barcos - Battleship";
     var gameId = ViewBag.GameId;
     var board = ViewBag.Board as LinkUpPro.Application.DTOs.Battleship.BattleshipBoardDto;
-    var shipsPlaced = board?.Ships.Count ?? 0;
+    var shipsPlaced = board?.Ships.Count(s => s.StartX >= 0 && s.StartY >= 0) ?? 0;
 }
 
 <div class="max-w-6xl mx-auto">
