@@ -1,6 +1,7 @@
 @model LinkUpPro.Application.DTOs.User.UserProfileDto
 @{
     ViewData["Title"] = $"Perfil de {Model.FirstName} {Model.LastName}";
+    var posts = ViewBag.Posts as List<LinkUpPro.Application.ViewModels.Post.PostViewModel> ?? new List<LinkUpPro.Application.ViewModels.Post.PostViewModel>();
 }
 
 <div class="max-w-3xl mx-auto space-y-8">
@@ -89,6 +90,24 @@
                 </button>
             </div>
         </div>
+    </div>
+
+    <!-- Muro / Publicaciones -->
+    <div class="flex flex-col gap-6 mt-8">
+        <h3 class="text-xl font-bold border-b border-card-border pb-3">Publicaciones</h3>
+        @if (posts.Any())
+        {
+            foreach (var post in posts.OrderByDescending(p => p.CreatedAt))
+            {
+                <partial name="_PostCard" model="post" />
+            }
+        }
+        else
+        {
+            <div class="card-static text-center py-12">
+                <p class="text-text-muted">No hay publicaciones para mostrar.</p>
+            </div>
+        }
     </div>
 </div>
 

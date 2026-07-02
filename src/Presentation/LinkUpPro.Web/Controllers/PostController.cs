@@ -114,7 +114,13 @@ public class PostController : Controller
         var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
         var result = await _postQueryService.GetPostByIdAsync(id, currentUserId);
         
-        if (result.HasError || result.Data == null) return NotFound();
+        if (result.HasError)
+        {
+            TempData["Error"] = result.Error;
+            return RedirectToAction("Index", "Home");
+        }
+        
+        if (result.Data == null) return NotFound();
 
         var viewModel = _mapper.Map<PostViewModel>(result.Data);
         viewModel.IsOwner = result.Data.UserId == currentUserId;

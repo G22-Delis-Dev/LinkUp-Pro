@@ -17,6 +17,9 @@ public class PostDto
     public int CommentCount { get; set; }
     public int LikeCount { get; set; }
     public int DislikeCount { get; set; }
+    public bool CurrentUserHasLiked { get; set; }
+    public bool CurrentUserHasDisliked { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? LastModifiedAt { get; set; }
+    public List<LinkUpPro.Application.DTOs.Comment.CommentDto> Comments { get; set; } = new();
 }

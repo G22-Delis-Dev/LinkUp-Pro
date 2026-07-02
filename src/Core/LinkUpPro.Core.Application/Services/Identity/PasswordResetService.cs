@@ -27,15 +27,16 @@ public class PasswordResetService : IPasswordResetService
 
     public async Task<ServiceResponse<string>> RequestResetAsync(ForgotPasswordDto dto)
     {
-        // Mensaje genérico para no revelar si la cuenta existe (requisito de seguridad)
-        const string genericMessage =
-            "Si el correo está registrado, recibirá un enlace para restablecer su contraseña.";
+        const string genericMessage = "Si la cuenta existe y cumple las condiciones, recibirá un correo electrónico con las instrucciones correspondientes.";
 
         var appUser = await _userManager.FindByEmailAsync(dto.Email);
         if (appUser == null)
         {
             return ServiceResponse<string>.Success(genericMessage);
         }
+
+        // Invalidar cuando se genere un nuevo token para el mismo usuario.
+        await _userManager.UpdateSecurityStampAsync(appUser);
 
         // Generar token de reset (1h de vigencia se configura por separado si es necesario)
         var token = await _userManager.GeneratePasswordResetTokenAsync(appUser);
@@ -63,8 +64,7 @@ public class PasswordResetService : IPasswordResetService
         var appUser = await _userManager.FindByEmailAsync(dto.Email);
         if (appUser == null)
         {
-            return ServiceResponse<string>.Failure(
-                "El enlace de restablecimiento no es válido.");
+            return ServiceResponse<string>.Failure("El enlace para restablecer la contraseña ha vencido. Solicite uno nuevo.");
         }
 
         // Decodificar token
@@ -74,9 +74,13 @@ public class PasswordResetService : IPasswordResetService
         var result = await _userManager.ResetPasswordAsync(appUser, decodedToken, dto.NewPassword);
         if (!result.Succeeded)
         {
+            if (result.Errors.Any(e => e.Code == "InvalidToken"))
+            {
+                return ServiceResponse<string>.Failure("El enlace para restablecer la contraseña ha vencido. Solicite uno nuevo.");
+            }
+
             var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            return ServiceResponse<string>.Failure(
-                $"No se pudo restablecer la contraseña: {errors}");
+            return ServiceResponse<string>.Failure($"No se pudo restablecer la contraseña: {errors}");
         }
 
         // Invalidar sesiones anteriores cambiando el SecurityStamp

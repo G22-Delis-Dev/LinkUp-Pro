@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LinkUpPro.Web.Controllers;
 
-[AllowAnonymous]
 public class AuthController : Controller
 {
     private readonly ILoginService _loginService;
@@ -30,6 +29,7 @@ public class AuthController : Controller
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public IActionResult Login(string? returnUrl = null, string? message = null)
     {
         if (User.Identity != null && User.Identity.IsAuthenticated)
@@ -50,6 +50,7 @@ public class AuthController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [AllowAnonymous]
     public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
     {
         if (!ModelState.IsValid)
@@ -84,6 +85,7 @@ public class AuthController : Controller
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public IActionResult Register()
     {
         if (User.Identity != null && User.Identity.IsAuthenticated)
@@ -94,6 +96,7 @@ public class AuthController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [AllowAnonymous]
     public async Task<IActionResult> Register(RegisterViewModel model)
     {
         if (!ModelState.IsValid)
@@ -122,6 +125,7 @@ public class AuthController : Controller
         return View(model);
     }
 
+    [AllowAnonymous]
     public IActionResult AccountCreated(string email)
     {
         ViewBag.Email = email;
@@ -129,6 +133,7 @@ public class AuthController : Controller
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> Activate(string userId, string token)
     {
         var result = await _activationService.ActivateAsync(userId, token);
@@ -145,6 +150,7 @@ public class AuthController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [AllowAnonymous]
     public async Task<IActionResult> ResendActivation(string username)
     {
         // En una app real, si sólo tenemos username del form, buscaríamos el email. 
@@ -161,6 +167,7 @@ public class AuthController : Controller
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public IActionResult ForgotPassword()
     {
         return View(new ForgotPasswordViewModel());
@@ -168,6 +175,7 @@ public class AuthController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [AllowAnonymous]
     public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
     {
         if (!ModelState.IsValid) return View(model);
@@ -175,11 +183,12 @@ public class AuthController : Controller
         var dto = new ForgotPasswordDto { Email = model.Email, Origin = $"{Request.Scheme}://{Request.Host.Value}" };
         var result = await _passwordResetService.RequestResetAsync(dto);
 
-        TempData["Info"] = "Si el correo existe en nuestro sistema, recibirá un enlace para restablecer su contraseña.";
+        TempData["Info"] = result.Data; // Uses the generic message from the service
         return RedirectToAction(nameof(Login));
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public IActionResult ResetPassword(string token, string email)
     {
         var model = new ResetPasswordViewModel { Token = token, Email = email };
@@ -188,6 +197,7 @@ public class AuthController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [AllowAnonymous]
     public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
     {
         if (!ModelState.IsValid) return View(model);
@@ -212,6 +222,7 @@ public class AuthController : Controller
         return View(model);
     }
 
+    [Authorize]
     public async Task<IActionResult> Logout()
     {
         await _sessionService.SignOutAsync();

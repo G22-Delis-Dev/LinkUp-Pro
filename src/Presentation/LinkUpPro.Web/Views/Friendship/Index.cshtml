@@ -9,15 +9,24 @@
             <h1 class="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-accent to-secondary">Mis Amigos</h1>
             <p class="text-text-muted mt-2">Tienes @Model.Count amigos en total.</p>
         </div>
-        <a asp-controller="FriendRequestList" asp-action="Index" class="btn-primary-custom inline-flex items-center gap-2">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="8.5" cy="7" r="4"></circle>
-                <line x1="20" y1="8" x2="20" y2="14"></line>
-                <line x1="23" y1="11" x2="17" y2="11"></line>
-            </svg>
-            Gestionar Solicitudes
-        </a>
+        <div class="flex gap-4">
+            <a asp-controller="FriendRequestSend" asp-action="Create" class="btn-primary-custom inline-flex items-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Añadir Amigo
+            </a>
+            <a asp-controller="FriendRequestList" asp-action="Index" class="bg-white/5 hover:bg-white/10 text-white font-semibold rounded-lg px-4 py-3 transition-colors inline-flex items-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
+                    <line x1="20" y1="8" x2="20" y2="14"></line>
+                    <line x1="23" y1="11" x2="17" y2="11"></line>
+                </svg>
+                Gestionar Solicitudes
+            </a>
+        </div>
     </div>
 
     <!-- Buscador -->

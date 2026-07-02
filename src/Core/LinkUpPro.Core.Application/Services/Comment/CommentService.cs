@@ -77,6 +77,24 @@ public class CommentService : ICommentService
         return ServiceResponse<CommentDto>.Success(result);
     }
 
+    public async Task<BaseResult> UpdateCommentAsync(Guid commentId, Guid userId, string newContent)
+    {
+        var comment = await _commentRepository.GetByIdAsync(commentId);
+        if (comment == null)
+            return BaseResult.Fail("Comentario no encontrado.");
+
+        if (comment.UserId != userId)
+            return BaseResult.Fail("No tienes permisos para editar este comentario.");
+
+        if (string.IsNullOrWhiteSpace(newContent))
+            return BaseResult.Fail("El comentario no puede estar vacío.");
+
+        comment.Content = newContent.Trim();
+        await _commentRepository.UpdateAsync(comment);
+
+        return BaseResult.Ok();
+    }
+
     public async Task<BaseResult> DeleteCommentAsync(Guid commentId, Guid userId)
     {
         var comment = await _commentRepository.GetByIdAsync(commentId);

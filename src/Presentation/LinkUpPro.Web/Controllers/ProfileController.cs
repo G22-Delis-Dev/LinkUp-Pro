@@ -43,14 +43,13 @@ public class ProfileController : Controller
         var profileResult = await _userService.GetProfileAsync(targetId);
         if (profileResult.HasError || profileResult.Data == null) return NotFound();
 
-        var feedResult = await _postQueryService.GetFeedAsync(targetId);
+        var feedResult = await _postQueryService.GetUserPostsAsync(targetId, currentUserId);
         var postDtos = feedResult.HasError || feedResult.Data == null
             ? new List<LinkUpPro.Application.DTOs.Post.PostDto>()
             : feedResult.Data.ToList();
 
-        var filteredDtos = postDtos.Where(p => p.UserId == targetId).ToList();
-        var userPosts = _mapper.Map<List<PostViewModel>>(filteredDtos);
-        foreach (var (vm, dto) in userPosts.Zip(filteredDtos))
+        var userPosts = _mapper.Map<List<PostViewModel>>(postDtos);
+        foreach (var (vm, dto) in userPosts.Zip(postDtos))
         {
             vm.IsOwner = dto.UserId == currentUserId;
             vm.TimeAgo = $"{(int)(DateTime.UtcNow - dto.CreatedAt).TotalHours}h";
@@ -82,12 +81,12 @@ public class ProfileController : Controller
 
         if (profileResult.HasError || profileResult.Data == null) return NotFound();
 
-        // Mapear UserProfileDto → UpdateProfileViewModel (campos editables solamente)
         var model = new UpdateProfileViewModel
         {
             FirstName = profileResult.Data.FirstName,
             LastName = profileResult.Data.LastName,
-            PhoneNumber = profileResult.Data.PhoneNumber
+            PhoneNumber = profileResult.Data.PhoneNumber,
+            CurrentProfilePicture = profileResult.Data.ProfilePictureUrl
         };
 
         return View(model);
@@ -97,11 +96,42 @@ public class ProfileController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(UpdateProfileViewModel model)
     {
-        if (!ModelState.IsValid) return View(model);
-
         var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
 
-        // Mapear ViewModel → DTO para el servicio
+        if (!ModelState.IsValid) 
+        {
+            var profileResult = await _userService.GetProfileAsync(currentUserId);
+            if (profileResult.Data != null)
+            {
+                model.CurrentProfilePicture = profileResult.Data.ProfilePictureUrl;
+            }
+            return View(model);
+        }
+
+        // Si intenta cambiar la contraseña, validar que haya enviado la actual y la nueva
+        bool intentandoCambiarPassword = !string.IsNullOrWhiteSpace(model.NewPassword) || !string.IsNullOrWhiteSpace(model.CurrentPassword);
+        if (intentandoCambiarPassword)
+        {
+            if (string.IsNullOrWhiteSpace(model.CurrentPassword))
+            {
+                ModelState.AddModelError("CurrentPassword", "Debe proporcionar su contraseña actual para cambiarla.");
+            }
+            if (string.IsNullOrWhiteSpace(model.NewPassword))
+            {
+                ModelState.AddModelError("NewPassword", "Debe proporcionar una nueva contraseña.");
+            }
+            
+            if (!ModelState.IsValid)
+            {
+                var profileResult = await _userService.GetProfileAsync(currentUserId);
+                if (profileResult.Data != null)
+                {
+                    model.CurrentProfilePicture = profileResult.Data.ProfilePictureUrl;
+                }
+                return View(model);
+            }
+        }
+
         var dto = _mapper.Map<UpdateProfileDto>(model);
         var result = await _userService.UpdateProfileAsync(currentUserId, dto);
 
@@ -117,11 +147,39 @@ public class ProfileController : Controller
                     model.ProfilePicture.FileName);
             }
 
+            if (intentandoCambiarPassword)
+            {
+                var passDto = new LinkUpPro.Application.DTOs.User.ChangePasswordDto
+                {
+                    CurrentPassword = model.CurrentPassword!,
+                    NewPassword = model.NewPassword!
+                };
+                var passResult = await _userService.ChangePasswordAsync(currentUserId, passDto);
+                if (!passResult.Success)
+                {
+                    foreach (var error in passResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error);
+                    }
+                    var profileResult = await _userService.GetProfileAsync(currentUserId);
+                    if (profileResult.Data != null)
+                    {
+                        model.CurrentProfilePicture = profileResult.Data.ProfilePictureUrl;
+                    }
+                    return View(model);
+                }
+            }
+
             TempData["Success"] = "Perfil actualizado exitosamente.";
             return RedirectToAction(nameof(View));
         }
 
         ModelState.AddModelError(string.Empty, result.Errors.FirstOrDefault() ?? "Error al actualizar perfil.");
+        var fallbackProfileResult = await _userService.GetProfileAsync(currentUserId);
+        if (fallbackProfileResult.Data != null)
+        {
+            model.CurrentProfilePicture = fallbackProfileResult.Data.ProfilePictureUrl;
+        }
         return View(model);
     }
 }

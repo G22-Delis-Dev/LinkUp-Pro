@@ -179,19 +179,41 @@ public class UserService : IUserService
         if (string.IsNullOrWhiteSpace(query))
             return new List<UserSearchDto>();
 
-        var users = await _userRepository.SearchActiveUsersAsync(query, currentUserId);
+        var q = query.Trim().ToLower();
+
+        // 1. Buscar por nombre/apellido en el dominio
+        var usersByName = await _userRepository.SearchActiveUsersAsync(query, currentUserId);
+
+        // 2. Buscar por username en Identity y cruzar con dominio
+        var appUsersByUsername = await _userManager.Users
+            .Where(u => u.UserName != null && u.UserName.ToLower().Contains(q))
+            .Select(u => new { u.UserId, u.UserName })
+            .ToListAsync();
+
+        var usernameMatchIds = appUsersByUsername.Select(a => a.UserId).ToHashSet();
+
+        var usersByUsername = usernameMatchIds.Any()
+            ? await _userRepository.FindAsync(u =>
+                u.IsActive &&
+                u.Id != currentUserId &&
+                usernameMatchIds.Contains(u.Id))
+            : new List<Domain.Entities.User.User>();
+
+        // 3. Unir sin duplicados
+        var allUsers = usersByName
+            .Union(usersByUsername)
+            .DistinctBy(u => u.Id)
+            .ToList();
 
         IEnumerable<Guid> excludedIds = Enumerable.Empty<Guid>();
 
         if (excludeFriendsAndPending)
         {
-            // Ids de amigos activos
             var friends = await _friendshipRepository.FindAsync(f =>
                 (f.UserId == currentUserId || f.FriendId == currentUserId) &&
                 f.Status == FriendshipStatus.Active);
             var friendIds = friends.Select(f => f.UserId == currentUserId ? f.FriendId : f.UserId);
 
-            // Ids con solicitud pendiente (enviadas o recibidas)
             var pending = await _friendRequestRepository.FindAsync(r =>
                 (r.SenderId == currentUserId || r.ReceiverId == currentUserId) &&
                 r.Status == LinkUpPro.Domain.Enums.Friendship.FriendRequestStatus.Pending);
@@ -200,16 +222,33 @@ public class UserService : IUserService
             excludedIds = friendIds.Concat(pendingIds).Distinct();
         }
 
-        return users
+        // 4. Construir resultado con username incluido
+        var usernameMap = appUsersByUsername.ToDictionary(a => a.UserId, a => a.UserName);
+
+        // Para usuarios encontrados por nombre, también buscar su username
+        var missingIds = allUsers.Select(u => u.Id).Where(id => !usernameMap.ContainsKey(id)).ToList();
+        if (missingIds.Any())
+        {
+            var extraAppUsers = await _userManager.Users
+                .Where(u => missingIds.Contains(u.UserId))
+                .Select(u => new { u.UserId, u.UserName })
+                .ToListAsync();
+            foreach (var a in extraAppUsers)
+                usernameMap[a.UserId] = a.UserName;
+        }
+
+        return allUsers
             .Where(u => !excludedIds.Contains(u.Id))
             .Select(u => new UserSearchDto
             {
                 Id = u.Id,
                 FullName = $"{u.FirstName} {u.LastName}",
+                Username = usernameMap.GetValueOrDefault(u.Id),
                 ProfilePictureUrl = !string.IsNullOrEmpty(u.ProfilePicturePath)
                     ? _imageStorage.GetImageUrl(u.ProfilePicturePath)
                     : null
             })
+            .Take(20)
             .ToList();
     }
 }

@@ -59,4 +59,19 @@ public class CommentController : Controller
             
         return Redirect(string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl);
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(Guid id, string content, string returnUrl)
+    {
+        var currentUserId = Guid.Parse(User.FindFirst("uid")?.Value ?? Guid.Empty.ToString());
+        var result = await _commentService.UpdateCommentAsync(id, currentUserId, content);
+        
+        if (result.Success)
+            TempData["Success"] = "Comentario actualizado.";
+        else
+            TempData["Error"] = result.Errors.FirstOrDefault() ?? "Ocurrió un error al actualizar el comentario.";
+            
+        return Redirect(string.IsNullOrEmpty(returnUrl) ? "/" : returnUrl);
+    }
 }

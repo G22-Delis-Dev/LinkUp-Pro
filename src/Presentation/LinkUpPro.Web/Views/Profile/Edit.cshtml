@@ -8,7 +8,7 @@
     <div class="card-static">
         <div class="flex items-center justify-between mb-6 border-b border-card-border/50 pb-4">
             <h2 class="text-2xl font-bold text-white">Editar Perfil</h2>
-            <a asp-action="View" class="text-text-muted hover:text-white px-3 py-1 rounded-lg hover:bg-white/5 transition-colors text-sm">Cancelar</a>
+            <a asp-controller="Home" asp-action="Index" class="text-text-muted hover:text-white px-3 py-1 rounded-lg hover:bg-white/5 transition-colors text-sm">Volver atrás</a>
         </div>
 
         <form asp-action="Edit" method="post" enctype="multipart/form-data">
@@ -34,14 +34,48 @@
                 <span asp-validation-for="PhoneNumber" class="text-red-500 text-xs mt-1 block"></span>
             </div>
 
-            <div class="mb-8">
+            <div class="mb-6 border-b border-card-border/50 pb-6">
                 <label asp-for="ProfilePicture" class="label-custom">Foto de Perfil</label>
+                
+                @if (!string.IsNullOrEmpty(Model.CurrentProfilePicture))
+                {
+                    <div class="mb-4">
+                        <p class="text-xs text-text-muted mb-2">Foto actual:</p>
+                        <img src="@Model.CurrentProfilePicture" alt="Foto actual" class="w-20 h-20 rounded-full object-cover shadow-lg border border-white/10" />
+                    </div>
+                }
+
                 <input asp-for="ProfilePicture" type="file" class="input-custom" accept="image/jpeg,image/png,image/webp" />
-                <p class="text-xs text-text-muted mt-2">Formatos aceptados: JPG, PNG, WEBP. Tamaño máximo recomendado: 2MB.</p>
+                <p class="text-xs text-text-muted mt-2">Formatos aceptados: JPG, PNG, WEBP. Permite sustituir la foto actual.</p>
+            </div>
+
+            <!-- Sección de Cambio de Contraseña -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-white mb-4">Cambiar Contraseña (Opcional)</h3>
+                
+                <div class="mb-4">
+                    <label asp-for="CurrentPassword" class="label-custom">Contraseña actual</label>
+                    <input asp-for="CurrentPassword" type="password" class="input-custom" autocomplete="off" />
+                    <span asp-validation-for="CurrentPassword" class="text-red-500 text-xs mt-1 block"></span>
+                </div>
+                
+                <div class="flex flex-col md:flex-row gap-6 mb-4">
+                    <div class="flex-1">
+                        <label asp-for="NewPassword" class="label-custom">Nueva contraseña</label>
+                        <input asp-for="NewPassword" type="password" class="input-custom" autocomplete="new-password" />
+                        <span asp-validation-for="NewPassword" class="text-red-500 text-xs mt-1 block"></span>
+                    </div>
+                    <div class="flex-1">
+                        <label asp-for="ConfirmPassword" class="label-custom">Confirmar contraseña</label>
+                        <input asp-for="ConfirmPassword" type="password" class="input-custom" autocomplete="new-password" />
+                        <span asp-validation-for="ConfirmPassword" class="text-red-500 text-xs mt-1 block"></span>
+                    </div>
+                </div>
+                <p class="text-xs text-text-muted">Si no deseas cambiar tu contraseña, deja estos campos vacíos.</p>
             </div>
 
             <button type="submit" class="btn-primary-custom">
-                Guardar Cambios
+                Guardar cambios
             </button>
         </form>
     </div>

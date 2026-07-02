@@ -78,14 +78,18 @@
             <span>@Model.CommentCount Comentarios</span>
         </div>
 
+        @{
+            var likeBtnStyle = Model.CurrentUserHasLiked ? "color: #00D4FF; background: rgba(0, 212, 255, 0.1);" : "";
+            var dislikeBtnStyle = Model.CurrentUserHasDisliked ? "color: #EF4444; background: rgba(239, 68, 68, 0.1);" : "";
+        }
         <div class="flex items-center justify-between border-t border-card-border/50 pt-2 px-1">
-            <button type="button" id="like-btn-@Model.Id" class="flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200" onclick="toggleReaction('@Model.Id', 0)">
+            <button type="button" id="like-btn-@Model.Id" style="@likeBtnStyle" class="flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200" onclick="toggleReaction('@Model.Id', 0)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
                 </svg>
                 Me Gusta
             </button>
-            <button type="button" id="dislike-btn-@Model.Id" class="flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200" onclick="toggleReaction('@Model.Id', 1)">
+            <button type="button" id="dislike-btn-@Model.Id" style="@dislikeBtnStyle" class="flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200" onclick="toggleReaction('@Model.Id', 1)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
                 </svg>

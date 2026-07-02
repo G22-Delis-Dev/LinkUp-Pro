@@ -49,10 +49,10 @@ public static class IdentityServiceExtensions
         .AddDefaultTokenProviders()
         .AddClaimsPrincipalFactory<LinkUpPro.Infrastructure.Identity.Services.CustomUserClaimsPrincipalFactory>();
 
-        // ── Vigencia de Tokens (24h activación, 1h reset) ───────────
+        // ── Vigencia de Tokens ───────────
         services.Configure<DataProtectionTokenProviderOptions>(options =>
         {
-            options.TokenLifespan = TimeSpan.FromHours(24);
+            options.TokenLifespan = TimeSpan.FromHours(1);
         });
 
         return services;

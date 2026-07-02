@@ -68,7 +68,7 @@ public class AccountActivationService : IAccountActivationService
     public async Task<ServiceResponse<string>> ResendActivationAsync(string email, string origin)
     {
         // Mensaje genérico para no revelar si la cuenta existe
-        const string genericMessage = "Si el correo está registrado, recibirá un nuevo enlace de activación.";
+        const string genericMessage = "Si la cuenta existe y cumple las condiciones, recibirá un correo electrónico con las instrucciones correspondientes.";
 
         var appUser = await _userManager.FindByEmailAsync(email)
             ?? await _userManager.FindByNameAsync(email);

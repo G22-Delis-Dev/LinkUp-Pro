@@ -44,7 +44,7 @@ public class PostQueryService : IPostQueryService
             .Select(f => f.UserId == userId ? f.FriendId : f.UserId)
             .ToHashSet();
 
-        // 2. Obtener posts: propios + de amigos (FriendsOnly)
+        // 2. Obtener posts: propios + de amigos (FriendsOnly y Public)
         var posts = await _postRepository.Query()
             .Include(p => p.Images)
             .Include(p => p.Videos)
@@ -53,7 +53,7 @@ public class PostQueryService : IPostQueryService
             .Where(p =>
                 // Posts propios (cualquier privacidad)
                 p.UserId == userId ||
-                // Posts de amigos (solo FriendsOnly)
+                // Posts de amigos (FriendsOnly)
                 (friendIds.Contains(p.UserId) && p.Privacy == PostPrivacy.FriendsOnly))
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
@@ -91,6 +91,85 @@ public class PostQueryService : IPostQueryService
                 CommentCount = p.Comments.Count,
                 LikeCount = p.Reactions.Count(r => r.Type == Domain.Enums.Reaction.ReactionType.Like),
                 DislikeCount = p.Reactions.Count(r => r.Type == Domain.Enums.Reaction.ReactionType.Dislike),
+                CurrentUserHasLiked = p.Reactions.Any(r => r.UserId == userId && r.Type == Domain.Enums.Reaction.ReactionType.Like),
+                CurrentUserHasDisliked = p.Reactions.Any(r => r.UserId == userId && r.Type == Domain.Enums.Reaction.ReactionType.Dislike),
+                CreatedAt = p.CreatedAt,
+                LastModifiedAt = p.LastModifiedAt
+            };
+        }).ToList();
+
+        return ServiceResponse<IReadOnlyList<PostDto>>.Success(postDtos);
+    }
+
+    public async Task<ServiceResponse<IReadOnlyList<PostDto>>> GetUserPostsAsync(Guid targetUserId, Guid requestingUserId)
+    {
+        bool areFriends = false;
+        if (targetUserId != requestingUserId)
+        {
+            areFriends = await _friendshipRepository.ExistsAsync(f =>
+                ((f.UserId == requestingUserId && f.FriendId == targetUserId) ||
+                 (f.UserId == targetUserId && f.FriendId == requestingUserId)) &&
+                f.Status == Domain.Enums.Friendship.FriendshipStatus.Active);
+        }
+        else
+        {
+            areFriends = true;
+        }
+
+        var query = _postRepository.Query()
+            .Include(p => p.Images)
+            .Include(p => p.Videos)
+            .Include(p => p.Comments)
+            .Include(p => p.Reactions)
+            .Where(p => p.UserId == targetUserId);
+
+        if (targetUserId != requestingUserId)
+        {
+            if (areFriends)
+            {
+                query = query.Where(p => p.Privacy == PostPrivacy.FriendsOnly);
+            }
+            else
+            {
+                // Si no son amigos, no ven ninguna publicación (ya no existe público)
+                query = query.Where(p => false);
+            }
+        }
+        else
+        {
+            // Regla estricta: "Solo yo ... Únicamente se mostrará en el Home del creador"
+            // Por tanto, en el perfil (GetUserPostsAsync) el autor NO debe ver sus posts "Solo yo".
+            query = query.Where(p => p.Privacy != PostPrivacy.Private);
+        }
+
+        var posts = await query.OrderByDescending(p => p.CreatedAt).ToListAsync();
+
+        var author = await _userRepository.GetByIdAsync(targetUserId);
+
+        var postDtos = posts.Select(p =>
+        {
+            var image = p.Images.FirstOrDefault();
+            var video = p.Videos.FirstOrDefault();
+
+            return new PostDto
+            {
+                Id = p.Id,
+                UserId = p.UserId,
+                AuthorName = author != null ? $"{author.FirstName} {author.LastName}" : "Usuario",
+                AuthorProfilePicture = author?.ProfilePicturePath != null
+                    ? _imageStorage.GetImageUrl(author.ProfilePicturePath)
+                    : null,
+                Content = p.Content,
+                Privacy = p.Privacy,
+                ContentType = p.ContentType,
+                AllowComments = p.AllowComments,
+                ImageUrl = image != null ? _imageStorage.GetImageUrl(image.ImagePath) : null,
+                YouTubeVideoId = video?.VideoPath,
+                CommentCount = p.Comments.Count,
+                LikeCount = p.Reactions.Count(r => r.Type == Domain.Enums.Reaction.ReactionType.Like),
+                DislikeCount = p.Reactions.Count(r => r.Type == Domain.Enums.Reaction.ReactionType.Dislike),
+                CurrentUserHasLiked = p.Reactions.Any(r => r.UserId == requestingUserId && r.Type == Domain.Enums.Reaction.ReactionType.Like),
+                CurrentUserHasDisliked = p.Reactions.Any(r => r.UserId == requestingUserId && r.Type == Domain.Enums.Reaction.ReactionType.Dislike),
                 CreatedAt = p.CreatedAt,
                 LastModifiedAt = p.LastModifiedAt
             };
@@ -117,12 +196,37 @@ public class PostQueryService : IPostQueryService
         if (!await _privacyService.CanViewPostAsync(postId, requestingUserId))
         {
             return ServiceResponse<PostDto>.Failure(
-                "No tienes permisos para ver esta publicación.");
+                "No posee permisos para visualizar esta publicación.");
         }
 
         var author = await _userRepository.GetByIdAsync(post.UserId);
         var image = post.Images.FirstOrDefault();
         var video = post.Videos.FirstOrDefault();
+
+        // Obtener datos de los autores de los comentarios
+        var commenterIds = post.Comments.Select(c => c.UserId).Distinct().ToList();
+        var commenters = new Dictionary<Guid, Domain.Entities.User.User>();
+        foreach (var cid in commenterIds)
+        {
+            var commenter = await _userRepository.GetByIdAsync(cid);
+            if (commenter != null) commenters[cid] = commenter;
+        }
+
+        var commentsList = post.Comments.OrderBy(c => c.CreatedAt).Select(c =>
+        {
+            var commenter = commenters.GetValueOrDefault(c.UserId);
+            return new LinkUpPro.Application.DTOs.Comment.CommentDto
+            {
+                Id = c.Id,
+                PostId = c.PostId,
+                UserId = c.UserId,
+                AuthorName = commenter != null ? $"{commenter.FirstName} {commenter.LastName}" : "Usuario",
+                AuthorProfilePicture = commenter?.ProfilePicturePath != null ? _imageStorage.GetImageUrl(commenter.ProfilePicturePath) : null,
+                Content = c.Content,
+                CreatedAt = c.CreatedAt,
+                ReplyCount = c.Replies?.Count ?? 0
+            };
+        }).ToList();
 
         var dto = new PostDto
         {
@@ -141,8 +245,11 @@ public class PostQueryService : IPostQueryService
             CommentCount = post.Comments.Count,
             LikeCount = post.Reactions.Count(r => r.Type == Domain.Enums.Reaction.ReactionType.Like),
             DislikeCount = post.Reactions.Count(r => r.Type == Domain.Enums.Reaction.ReactionType.Dislike),
+            CurrentUserHasLiked = post.Reactions.Any(r => r.UserId == requestingUserId && r.Type == Domain.Enums.Reaction.ReactionType.Like),
+            CurrentUserHasDisliked = post.Reactions.Any(r => r.UserId == requestingUserId && r.Type == Domain.Enums.Reaction.ReactionType.Dislike),
             CreatedAt = post.CreatedAt,
-            LastModifiedAt = post.LastModifiedAt
+            LastModifiedAt = post.LastModifiedAt,
+            Comments = commentsList
         };
 
         return ServiceResponse<PostDto>.Success(dto);
