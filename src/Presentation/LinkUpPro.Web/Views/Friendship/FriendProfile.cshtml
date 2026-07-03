@@ -17,18 +17,18 @@
             }
             else
             {
-                <div class="w-32 h-32 rounded-full bg-gradient-to-br from-secondary to-accent flex items-center justify-center shadow-2xl border-4 border-primary z-10">
+                <div class="w-32 h-32 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-2xl border-4 border-primary z-10">
                     <span class="text-4xl font-bold text-white">@Model.FirstName.Substring(0, 1).ToUpper()</span>
                 </div>
             }
             
             <div class="flex-grow text-center md:text-left z-10 mb-2">
                 <h1 class="text-3xl font-bold text-white tracking-tight">@Model.FirstName @Model.LastName</h1>
-                <p class="text-accent font-medium mt-1">@@@Model.Username</p>
+                <p class="text-indigo-400 font-medium mt-1">@@@Model.Username</p>
             </div>
             
             <div class="z-10 flex gap-3">
-                <a asp-controller="BattleshipGameCreate" asp-action="Create" class="btn-primary-custom flex items-center gap-2 px-6">
+                <a asp-controller="BattleshipGameCreate" asp-action="Create" class="btn-primary-custom">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polygon points="5 3 19 12 5 21 5 3"></polygon>
                     </svg>

@@ -45,9 +45,9 @@ public class EmailService : IEmailService
 
         using var client = new SmtpClient();
 
-        // Determinar tipo de conexión SSL
+        // Determinar tipo de conexión SSL/TLS (Auto elige StartTls para puerto 587 o SslOnConnect para puerto 465)
         var secureOption = _emailSettings.UseSsl
-            ? SecureSocketOptions.StartTls
+            ? SecureSocketOptions.Auto
             : SecureSocketOptions.None;
 
         await client.ConnectAsync(
@@ -56,7 +56,7 @@ public class EmailService : IEmailService
             secureOption
         );
 
-        // Solo autenticar si hay credenciales configuradas (CoMailpit no las necesita)
+        // Solo autenticar si hay credenciales configuradas
         if (!string.IsNullOrWhiteSpace(_emailSettings.SmtpUser) &&
             !string.IsNullOrWhiteSpace(_emailSettings.SmtpPassword))
         {

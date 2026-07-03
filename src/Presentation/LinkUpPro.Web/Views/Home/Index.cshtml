@@ -9,7 +9,7 @@
     <!-- Sidebar Izquierdo: Filtros y Acciones Rápida -->
     <div class="w-full md:w-1/4 flex flex-col gap-4">
         <div class="card-static">
-            <a asp-controller="Post" asp-action="Create" class="btn-primary-custom flex items-center justify-center gap-2 mb-4">
+            <a asp-controller="Post" asp-action="Create" class="btn-primary-custom w-full mb-4">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -21,13 +21,13 @@
             
             <h3 class="label-custom mb-3">Filtros de Feed</h3>
             <div class="flex flex-col gap-2">
-                <a asp-action="Index" asp-route-filter="all" class="px-4 py-2 rounded-lg font-medium transition-colors @(currentFilter == "all" ? "bg-accent/10 text-accent" : "text-text-muted hover:bg-white/5 hover:text-white")">
+                <a asp-action="Index" asp-route-filter="all" class="px-4 py-2 rounded-lg font-medium transition-colors @(currentFilter == "all" ? "bg-indigo-500/15 text-indigo-400 border border-indigo-500/30" : "text-slate-400 hover:bg-white/5 hover:text-white")">
                     Todos
                 </a>
-                <a asp-action="Index" asp-route-filter="friends" class="px-4 py-2 rounded-lg font-medium transition-colors @(currentFilter == "friends" ? "bg-accent/10 text-accent" : "text-text-muted hover:bg-white/5 hover:text-white")">
+                <a asp-action="Index" asp-route-filter="friends" class="px-4 py-2 rounded-lg font-medium transition-colors @(currentFilter == "friends" ? "bg-indigo-500/15 text-indigo-400 border border-indigo-500/30" : "text-slate-400 hover:bg-white/5 hover:text-white")">
                     Solo Amigos
                 </a>
-                <a asp-action="Index" asp-route-filter="mine" class="px-4 py-2 rounded-lg font-medium transition-colors @(currentFilter == "mine" ? "bg-accent/10 text-accent" : "text-text-muted hover:bg-white/5 hover:text-white")">
+                <a asp-action="Index" asp-route-filter="mine" class="px-4 py-2 rounded-lg font-medium transition-colors @(currentFilter == "mine" ? "bg-indigo-500/15 text-indigo-400 border border-indigo-500/30" : "text-slate-400 hover:bg-white/5 hover:text-white")">
                     Mis Publicaciones
                 </a>
             </div>

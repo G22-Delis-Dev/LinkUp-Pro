@@ -7,10 +7,10 @@
 <div class="max-w-4xl mx-auto space-y-6">
     <div class="flex justify-between items-center mb-8">
         <div>
-            <h1 class="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-accent to-secondary">Solicitudes de Amistad</h1>
+            <h1 class="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-blue-500">Solicitudes de Amistad</h1>
             <p class="text-text-muted mt-2">Gestiona las solicitudes que has recibido y enviado.</p>
         </div>
-        <a asp-controller="FriendRequestSend" asp-action="Create" class="btn-primary-custom inline-flex items-center gap-2">
+        <a asp-controller="FriendRequestSend" asp-action="Create" class="btn-primary-custom">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                 <circle cx="8.5" cy="7" r="4"></circle>
@@ -23,10 +23,10 @@
 
     <!-- Pestañas -->
     <div class="flex border-b border-card-border mb-6">
-        <a href="@Url.Action("Index", "FriendRequestList", new { tab = "received" })" class="px-6 py-3 font-semibold transition-colors border-b-2 @(activeTab == "received" ? "text-accent border-accent" : "text-text-muted border-transparent hover:text-white hover:border-white/30")">
+        <a href="@Url.Action("Index", "FriendRequestList", new { tab = "received" })" class="px-6 py-3 font-semibold transition-colors border-b-2 @(activeTab == "received" ? "text-indigo-400 border-indigo-500" : "text-text-muted border-transparent hover:text-white hover:border-white/30")">
             Recibidas
         </a>
-        <a href="@Url.Action("Index", "FriendRequestList", new { tab = "sent" })" class="px-6 py-3 font-semibold transition-colors border-b-2 @(activeTab == "sent" ? "text-accent border-accent" : "text-text-muted border-transparent hover:text-white hover:border-white/30")">
+        <a href="@Url.Action("Index", "FriendRequestList", new { tab = "sent" })" class="px-6 py-3 font-semibold transition-colors border-b-2 @(activeTab == "sent" ? "text-indigo-400 border-indigo-500" : "text-text-muted border-transparent hover:text-white hover:border-white/30")">
             Enviadas
         </a>
     </div>
@@ -35,16 +35,8 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         @if (!Model.Any())
         {
-            <div class="col-span-full card-static text-center py-12">
-                <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-text-muted">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold mb-2">No hay solicitudes</h3>
-                <p class="text-text-muted">No tienes solicitudes @(activeTab == "received" ? "recibidas" : "enviadas") en este momento.</p>
+            <div class="col-span-1 md:col-span-2 card-static text-center py-12">
+                <p class="text-text-muted">No hay solicitudes para mostrar en esta sección.</p>
             </div>
         }
         else
@@ -61,7 +53,7 @@
                             }
                             else
                             {
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-secondary to-accent flex items-center justify-center shadow-lg border border-white/10">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-lg border border-white/10">
                                     <span class="text-lg font-bold">@req.SenderName.Substring(0, 1).ToUpper()</span>
                                 </div>
                             }

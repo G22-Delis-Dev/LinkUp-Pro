@@ -1,5 +1,6 @@
 using LinkUpPro.Infrastructure.Identity.Context;
 using LinkUpPro.Infrastructure.Identity.Entities;
+using LinkUpPro.Infrastructure.Identity.Localization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -47,6 +48,7 @@ public static class IdentityServiceExtensions
         .AddEntityFrameworkStores<IdentityContext>()
         .AddSignInManager()
         .AddDefaultTokenProviders()
+        .AddErrorDescriber<SpanishIdentityErrorDescriber>()
         .AddClaimsPrincipalFactory<LinkUpPro.Infrastructure.Identity.Services.CustomUserClaimsPrincipalFactory>();
 
         // ── Vigencia de Tokens ───────────

@@ -103,7 +103,7 @@
                                             <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
                                             <input type="text" name="content" value="@comment.Content" class="input-custom flex-grow text-sm py-1.5" required autocomplete="off" />
                                             <button type="submit" class="btn-primary-custom w-auto py-1.5 px-4 text-sm">Guardar</button>
-                                            <button type="button" onclick="document.getElementById('edit-form-@comment.Id').classList.add('hidden'); document.getElementById('comment-text-@comment.Id').classList.remove('hidden');" class="bg-white/5 hover:bg-white/10 text-white font-medium rounded-lg px-4 py-1.5 text-sm transition-colors">Cancelar</button>
+                                            <button type="button" onclick="document.getElementById('edit-form-@comment.Id').classList.add('hidden'); document.getElementById('comment-text-@comment.Id').classList.remove('hidden');" class="btn-secondary-custom py-1.5 px-4 text-sm">Cancelar</button>
                                         </form>
                                     </div>
                                 }

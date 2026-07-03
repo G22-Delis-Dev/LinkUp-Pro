@@ -22,6 +22,8 @@ public class RegisterViewModel
     public string PhoneNumber { get; set; } = null!;
 
     [Required(ErrorMessage = "La contraseña es requerida.")]
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "La contraseña debe tener al menos {2} caracteres.")]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).+$", ErrorMessage = "La contraseña debe tener mayúsculas, minúsculas, números y caracteres especiales.")]
     public string Password { get; set; } = null!;
 
     [Required(ErrorMessage = "Debes confirmar la contraseña.")]

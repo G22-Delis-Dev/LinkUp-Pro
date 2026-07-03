@@ -74,9 +74,14 @@
                 <p class="text-xs text-text-muted">Si no deseas cambiar tu contraseña, deja estos campos vacíos.</p>
             </div>
 
-            <button type="submit" class="btn-primary-custom">
-                Guardar cambios
-            </button>
+            <div class="pt-6 border-t border-slate-800/80 flex items-center justify-end gap-3">
+                <a asp-action="View" class="btn-secondary-custom">
+                    Cancelar
+                </a>
+                <button type="submit" class="btn-primary-custom">
+                    Guardar cambios
+                </button>
+            </div>
         </form>
     </div>
 </div>

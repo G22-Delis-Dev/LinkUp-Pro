@@ -95,10 +95,12 @@ public class RegisterService : IRegisterService
                 $"{dto.FirstName} {dto.LastName}",
                 activationUrl);
         }
-        catch
+        catch (Exception ex)
         {
-            // No falla el registro si el correo no se envía
-            // El usuario podrá reenviar desde la pantalla de login
+            // Fallar el registro y mostrar el error de correo para debug
+            await _userManager.DeleteAsync(appUser);
+            await _userRepository.DeleteAsync(domainUser);
+            return ServiceResponse<string>.Failure($"Error al enviar correo: {ex.Message} - Inner: {ex.InnerException?.Message}");
         }
 
         return ServiceResponse<string>.Success(

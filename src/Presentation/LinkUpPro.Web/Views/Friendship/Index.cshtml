@@ -6,18 +6,18 @@
 <div class="max-w-4xl mx-auto space-y-6">
     <div class="flex justify-between items-center mb-8">
         <div>
-            <h1 class="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-accent to-secondary">Mis Amigos</h1>
+            <h1 class="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-blue-500">Mis Amigos</h1>
             <p class="text-text-muted mt-2">Tienes @Model.Count amigos en total.</p>
         </div>
-        <div class="flex gap-4">
-            <a asp-controller="FriendRequestSend" asp-action="Create" class="btn-primary-custom inline-flex items-center gap-2">
+        <div class="flex gap-3">
+            <a asp-controller="FriendRequestSend" asp-action="Create" class="btn-primary-custom">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
                 Añadir Amigo
             </a>
-            <a asp-controller="FriendRequestList" asp-action="Index" class="bg-white/5 hover:bg-white/10 text-white font-semibold rounded-lg px-4 py-3 transition-colors inline-flex items-center gap-2">
+            <a asp-controller="FriendRequestList" asp-action="Index" class="btn-secondary-custom">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                     <circle cx="8.5" cy="7" r="4"></circle>
@@ -31,11 +31,11 @@
 
     <!-- Buscador -->
     <div class="card-static mb-8">
-        <form method="get" asp-controller="FriendList" asp-action="Index" class="flex gap-4">
+        <form method="get" asp-controller="FriendList" asp-action="Index" class="flex gap-3">
             <div class="flex-grow">
                 <input type="text" name="search" value="@ViewBag.SearchQuery" placeholder="Buscar por nombre, apellido..." class="input-custom" />
             </div>
-            <button type="submit" class="btn-primary-custom whitespace-nowrap w-auto px-8">
+            <button type="submit" class="btn-primary-custom">
                 Buscar
             </button>
         </form>
