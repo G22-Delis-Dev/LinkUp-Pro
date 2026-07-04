@@ -80,13 +80,3 @@ Ver la carpeta `_docs/` para documentación detallada sobre:
 
 **Versión**: .NET 9  
 **Última actualización**: 2026-06-24
-
-
----
-
-## Equipo
-
-| Integrante | Matricula |
-|---|---|
-| **Delis Manuel De La Cruz Castillo** | 2025-1074 |
-| **Sky Luisahanie Andujar Victorino** | 2025-1063 |
