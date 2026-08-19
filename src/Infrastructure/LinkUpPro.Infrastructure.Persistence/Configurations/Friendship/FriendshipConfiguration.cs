@@ -1,4 +1,4 @@
-﻿using LinkUpPro.Domain.Entities.Friendship;
+using LinkUpPro.Domain.Entities.Friendship;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -27,7 +27,7 @@ namespace LinkUpPro.Infrastructure.Persistence.Configurations.Friendship
 
             // FK → User A
             builder.HasOne(f => f.User)
-                   .WithMany()
+                   .WithMany(u => u.Friendships)
                    .HasForeignKey(f => f.UserId)
                    .OnDelete(DeleteBehavior.Restrict);
 

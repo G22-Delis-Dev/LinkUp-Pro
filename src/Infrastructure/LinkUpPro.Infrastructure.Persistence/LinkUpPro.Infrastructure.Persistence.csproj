@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
@@ -9,18 +9,16 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\Core\LinkUpPro.Core.Application\LinkUpPro.Core.Application.csproj" />
 		<ProjectReference Include="..\..\Core\LinkUpPro.Core.Domain\LinkUpPro.Core.Domain.csproj" />
-		<!-- 
-			NOTA ARQUITECTÓNICA: Esta referencia a Identity es necesaria porque ApplicationDbContext 
-			hereda de IdentityDbContext<AppUser>. En arquitectura Onion pura, el contexto debería 
-			estar en la capa de composición (Web), pero por convención de EF Core y simplicidad, 
-			se mantiene aquí con esta única excepción documentada.
-		-->
 		<ProjectReference Include="..\LinkUpPro.Infrastructure.Identity\LinkUpPro.Infrastructure.Identity.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>

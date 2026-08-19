@@ -1,0 +1,143 @@
+@model List<LinkUpPro.Application.DTOs.Friendship.FriendshipDto>
+@{
+    ViewData["Title"] = "Mis Amigos";
+}
+
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-accent to-secondary">Mis Amigos</h1>
+            <p class="text-text-muted mt-2">Tienes @Model.Count amigos en total.</p>
+        </div>
+        <div class="flex gap-4">
+            <a asp-controller="FriendRequestSend" asp-action="Create" class="btn-primary-custom inline-flex items-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Añadir Amigo
+            </a>
+            <a asp-controller="FriendRequestList" asp-action="Index" class="bg-white/5 hover:bg-white/10 text-white font-semibold rounded-lg px-4 py-3 transition-colors inline-flex items-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
+                    <line x1="20" y1="8" x2="20" y2="14"></line>
+                    <line x1="23" y1="11" x2="17" y2="11"></line>
+                </svg>
+                Gestionar Solicitudes
+            </a>
+        </div>
+    </div>
+
+    <!-- Buscador -->
+    <div class="card-static mb-8">
+        <form method="get" asp-controller="FriendList" asp-action="Index" class="flex gap-4">
+            <div class="flex-grow">
+                <input type="text" name="search" value="@ViewBag.SearchQuery" placeholder="Buscar por nombre, apellido..." class="input-custom" />
+            </div>
+            <button type="submit" class="btn-primary-custom whitespace-nowrap w-auto px-8">
+                Buscar
+            </button>
+        </form>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        @if (!Model.Any())
+        {
+            <div class="col-span-full card-static text-center py-12">
+                <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-text-muted">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold mb-2">No se encontraron amigos</h3>
+                <p class="text-text-muted">Intenta buscar con otros términos o añade nuevos amigos.</p>
+            </div>
+        }
+        else
+        {
+            foreach (var friend in Model)
+            {
+                <div class="card-static flex items-center justify-between hover:border-accent/50 transition-colors">
+                    <div class="flex items-center gap-4 cursor-pointer" onclick="window.location.href='@Url.Action("View", "FriendProfile", new { id = friend.FriendId })'">
+                        @if (!string.IsNullOrEmpty(friend.FriendProfilePicture))
+                        {
+                            <img src="@friend.FriendProfilePicture" alt="@friend.FriendName" class="w-14 h-14 rounded-full object-cover shadow-lg border border-white/10" />
+                        }
+                        else
+                        {
+                            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-secondary to-accent flex items-center justify-center shadow-lg border border-white/10">
+                                <span class="text-xl font-bold">@friend.FriendName.Substring(0, 1).ToUpper()</span>
+                            </div>
+                        }
+                        <div>
+                            <h3 class="font-bold text-lg hover:text-accent transition-colors">@friend.FriendName</h3>
+                            <p class="text-sm text-text-muted">Amigos desde @friend.Since.ToLocalTime().ToString("MMM yyyy")</p>
+                            <button type="button" onclick="event.stopPropagation(); loadMutualFriends('@friend.FriendId', '@friend.FriendName')" class="text-xs text-accent hover:underline mt-1">Ver amigos en común</button>
+                        </div>
+                    </div>
+                    
+                    <form asp-controller="FriendDelete" asp-action="Delete" method="post" onsubmit="return confirm('¿Estás seguro de eliminar a @friend.FriendName de tus amigos?');">
+                        <input type="hidden" name="friendId" value="@friend.FriendId" />
+                        <button type="submit" class="p-2 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-colors" title="Eliminar amigo">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="8.5" cy="7" r="4"></circle>
+                                <line x1="18" y1="8" x2="23" y2="13"></line>
+                                <line x1="23" y1="8" x2="18" y2="13"></line>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<!-- Modal Amigos en Común -->
+<div id="mutualFriendsModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div class="bg-primary border border-card-border rounded-2xl p-6 w-full max-w-md shadow-2xl transform transition-all scale-95 opacity-0" id="mutualFriendsContent">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold" id="mutualFriendsTitle">Amigos en común</h3>
+            <button type="button" onclick="closeMutualFriends()" class="text-text-muted hover:text-white">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+        <div id="mutualFriendsList" class="max-h-96 overflow-y-auto pr-2 space-y-3">
+            <!-- Cargando -->
+            <div class="flex justify-center p-4">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function loadMutualFriends(friendId, friendName) {
+            $('#mutualFriendsTitle').text('Amigos en común con ' + friendName);
+            $('#mutualFriendsModal').removeClass('hidden').addClass('flex');
+            setTimeout(() => {
+                $('#mutualFriendsContent').removeClass('scale-95 opacity-0').addClass('scale-100 opacity-100');
+            }, 10);
+            
+            $('#mutualFriendsList').html('<div class="flex justify-center p-4"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div></div>');
+
+            $.get('@Url.Action("MutualFriends", "FriendList")?friendId=' + friendId, function (data) {
+                $('#mutualFriendsList').html(data);
+            }).fail(function() {
+                $('#mutualFriendsList').html('<p class="text-red-400 text-center py-4">Error al cargar.</p>');
+            });
+        }
+
+        function closeMutualFriends() {
+            $('#mutualFriendsContent').removeClass('scale-100 opacity-100').addClass('scale-95 opacity-0');
+            setTimeout(() => {
+                $('#mutualFriendsModal').removeClass('flex').addClass('hidden');
+            }, 200);
+        }
+    </script>
+}

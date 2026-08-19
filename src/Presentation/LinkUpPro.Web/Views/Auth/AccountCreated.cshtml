@@ -1,0 +1,23 @@
+@{
+    ViewData["Title"] = "Cuenta Creada";
+    Layout = "_Layout";
+}
+
+<div class="auth-container">
+    <div class="auth-card text-center">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent-success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-3">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        
+        <h2 class="auth-title mb-2">¡Cuenta Creada!</h2>
+        <p class="text-muted-custom mb-4">
+            Hemos enviado un correo de activación a <strong class="text-primary" style="color:var(--text-primary)!important;">@ViewBag.Email</strong>.
+            Por favor, revisa tu bandeja de entrada o carpeta de spam y haz clic en el enlace para activar tu cuenta.
+        </p>
+
+        <a asp-action="Login" class="btn-primary-custom w-100">
+            Ir a Iniciar Sesión
+        </a>
+    </div>
+</div>

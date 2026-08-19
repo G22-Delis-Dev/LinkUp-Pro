@@ -1,81 +1,71 @@
-using LinkUpPro.Infrastructure.Identity.Entities;
-using LinkUpPro.Infrastructure.Persistence.Context;
+using LinkUpPro.Application.Extensions;
+using LinkUpPro.Infrastructure.Identity.Extensions;
+using LinkUpPro.Infrastructure.Persistence.Extensions;
+using LinkUpPro.Infrastructure.Shared.Extensions;
 using LinkUpPro.Web.Filters;
 using LinkUpPro.Web.Middleware;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add DbContext
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// ═══════════════════════════════════════════════════════════════════
+// Registro de servicios por capas (Extension Methods)
+// ═══════════════════════════════════════════════════════════════════
+builder.Services.AddApplicationServices();
+builder.Services.AddIdentityServices(builder.Configuration);
+builder.Services.AddPersistenceServices(builder.Configuration);
+builder.Services.AddSharedInfrastructure(builder.Configuration);
 
-// Configure Identity with security settings
-builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
-{
-    // Password requirements
-    options.Password.RequireDigit = true;
-    options.Password.RequireLowercase = true;
-    options.Password.RequireUppercase = true;
-    options.Password.RequireNonAlphanumeric = true;
-    options.Password.RequiredLength = 8;
-    options.Password.RequiredUniqueChars = 1;
-
-    // Lockout settings - 5 failed attempts, 15 minute lockout
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
-    options.Lockout.MaxFailedAccessAttempts = 5;
-    options.Lockout.AllowedForNewUsers = true;
-
-    // User settings
-    options.User.RequireUniqueEmail = true;
-
-    // Sign-in settings
-    options.SignIn.RequireConfirmedEmail = false;
-    options.SignIn.RequireConfirmedAccount = false;
-})
-.AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
-
-// Configure authentication cookies
+// ── Cookies de Autenticación ─────────────────────────────────────
 builder.Services.ConfigureApplicationCookie(options =>
 {
     // Cookie security settings
-    options.Cookie.HttpOnly = true; // Not accessible from JavaScript
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // HTTPS only
-    options.Cookie.SameSite = SameSiteMode.Strict; // CSRF protection
+    options.Cookie.HttpOnly = true;         // No accesible desde JavaScript
+    // En desarrollo usamos SameAsRequest para permitir HTTP local; en producción siempre HTTPS
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Lax;  // Lax permite navegación normal; Strict bloqueaba redirects
 
-    // Session expiration - 30 minutes of inactivity
+    // Sesión expira tras 30 minutos de inactividad
     options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
-    options.SlidingExpiration = true; // Renews on each request
+    options.SlidingExpiration = true; // Renueva en cada request
 
-    // Authentication paths
+    // Rutas de autenticación
     options.LoginPath = "/Auth/Login";
     options.LogoutPath = "/Auth/Logout";
     options.AccessDeniedPath = "/Auth/AccessDenied";
 });
 
-// Configure session
+// ── Session ──────────────────────────────────────────────────────
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
-// Add controllers with ActiveAccountFilter
+// ── MVC + Filtros Globales ───────────────────────────────────────
 builder.Services.AddControllersWithViews(options =>
 {
-    // Add global filter to validate active accounts
+    // Traducciones de validaciones implícitas de ASP.NET Core
+    options.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(_ => "Este campo es requerido.");
+    options.ModelBindingMessageProvider.SetMissingBindRequiredValueAccessor(_ => "Se requiere un valor para este campo.");
+    options.ModelBindingMessageProvider.SetMissingKeyOrValueAccessor(() => "Se requiere un valor.");
+    options.ModelBindingMessageProvider.SetValueMustBeANumberAccessor(_ => "El campo debe ser un número.");
+    options.ModelBindingMessageProvider.SetNonPropertyAttemptedValueIsInvalidAccessor(x => $"El valor '{x}' no es válido.");
+    options.ModelBindingMessageProvider.SetNonPropertyUnknownValueIsInvalidAccessor(() => "El valor provisto no es válido.");
+    
+    // Filtro global para validar cuentas activas
     options.Filters.Add<ActiveAccountFilter>();
 });
 
-// Register ActiveAccountFilter
 builder.Services.AddScoped<ActiveAccountFilter>();
 
-// Add anti-forgery
+// ── Anti-forgery ─────────────────────────────────────────────────
 builder.Services.AddAntiforgery(options =>
 {
     options.HeaderName = "X-CSRF-TOKEN";
@@ -83,8 +73,14 @@ builder.Services.AddAntiforgery(options =>
 
 var app = builder.Build();
 
+// ═══════════════════════════════════════════════════════════════════
+// Ejecutar Seeds de Identity (Video 2 del profe)
+// ═══════════════════════════════════════════════════════════════════
+await app.Services.RunIdentitySeedsAsync();
 
-// Configure the HTTP request pipeline.
+// ═══════════════════════════════════════════════════════════════════
+// Pipeline HTTP
+// ═══════════════════════════════════════════════════════════════════
 
 // Error handling middleware
 app.UseMiddleware<ErrorHandlingMiddleware>();
@@ -95,25 +91,20 @@ if (!app.Environment.IsDevelopment())
     app.UseStatusCodePagesWithReExecute("/Error/{0}");
     app.UseHsts();
 }
-else
-{
-    // Development error page is handled by ErrorHandlingMiddleware
-}
 
 // Security headers
 app.Use(async (context, next) =>
 {
-    // Content Security Policy
     context.Response.Headers.Append("Content-Security-Policy",
         "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline'; " +
-        "style-src 'self' 'unsafe-inline'; " +
+        "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
         "img-src 'self' data: https:; " +
-        "font-src 'self'; " +
+        "font-src 'self' https://fonts.gstatic.com; " +
         "connect-src 'self'; " +
+        "frame-src https://www.youtube.com https://youtube.com; " +
         "frame-ancestors 'none';");
 
-    // Additional security headers
     context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
     context.Response.Headers.Append("X-Frame-Options", "DENY");
     context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
@@ -127,10 +118,10 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Session must come before authentication
+// Session debe ir antes de Authentication
 app.UseSession();
 
-// Authentication and authorization
+// Authentication y Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 

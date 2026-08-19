@@ -1,0 +1,165 @@
+@model LinkUpPro.Application.ViewModels.Post.PostViewModel
+@{
+    var currentUrl = ViewContext.HttpContext.Request.Path + ViewContext.HttpContext.Request.QueryString;
+}
+
+<div class="card-static mb-6 p-0 overflow-hidden">
+    <!-- Post Header -->
+    <div class="p-5 flex items-center justify-between border-b border-card-border/50">
+        <div class="flex items-center gap-3">
+            <a asp-controller="Profile" asp-action="View" asp-route-id="@Model.UserId" class="block w-10 h-10 rounded-full bg-gradient-to-r from-secondary to-accent flex items-center justify-center text-white font-bold overflow-hidden shadow-sm hover:opacity-90 transition-opacity">
+                @if (!string.IsNullOrEmpty(Model.AuthorProfilePicture))
+                {
+                    <img src="@Model.AuthorProfilePicture" alt="@Model.AuthorName" class="w-full h-full object-cover" />
+                }
+                else
+                {
+                    <span class="select-none">@Model.AuthorName.Substring(0, 1).ToUpper()</span>
+                }
+            </a>
+            <div>
+                <a asp-controller="Profile" asp-action="View" asp-route-id="@Model.UserId" class="font-semibold text-white hover:text-accent transition-colors">@Model.AuthorName</a>
+                <div class="flex items-center gap-2 text-xs text-text-muted">
+                    <span>@Model.TimeAgo</span>
+                    <span>•</span>
+                    <span class="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[10px] uppercase tracking-wider">
+                        @Model.Privacy.ToString()
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        @if (Model.IsOwner)
+        {
+            <div class="relative group">
+                <button type="button" class="p-2 text-text-muted hover:text-white hover:bg-white/5 rounded-full transition-colors focus:outline-none">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="1"></circle>
+                        <circle cx="12" cy="5" r="1"></circle>
+                        <circle cx="12" cy="19" r="1"></circle>
+                    </svg>
+                </button>
+                <!-- Dropdown -->
+                <div class="absolute right-0 mt-1 w-32 bg-card-bg border border-card-border backdrop-blur-xl rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <a asp-controller="Post" asp-action="Edit" asp-route-id="@Model.Id" class="block px-4 py-2 text-sm text-text-primary hover:bg-white/10 transition-colors rounded-t-xl">Editar</a>
+                    <form asp-controller="Post" asp-action="Delete" method="post" onsubmit="return confirm('¿Seguro que deseas eliminar esta publicación?');">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="w-full text-left block px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors rounded-b-xl">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Post Content -->
+    <div class="p-5 text-text-primary whitespace-pre-wrap text-[15px] leading-relaxed">@Model.Content</div>
+
+    <!-- Post Media -->
+    @if (Model.ContentType == LinkUpPro.Domain.Enums.Post.PostContentType.Image && !string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        <div class="w-full max-h-[500px] overflow-hidden bg-black/50 border-y border-card-border/50">
+            <img src="@Model.ImageUrl" alt="Post Image" loading="lazy" class="w-full h-full object-contain max-h-[500px]" />
+        </div>
+    }
+    else if (Model.ContentType == LinkUpPro.Domain.Enums.Post.PostContentType.Video && !string.IsNullOrEmpty(Model.YouTubeVideoId))
+    {
+        <div class="w-full aspect-video bg-black/50 border-y border-card-border/50">
+            <iframe class="w-full h-full" src="https://www.youtube.com/embed/@Model.YouTubeVideoId" allowfullscreen></iframe>
+        </div>
+    }
+
+    <!-- Post Stats & Actions -->
+    <div class="p-3 bg-black/20">
+        <div class="flex items-center justify-between text-xs text-text-muted px-2 mb-3">
+            <div class="flex gap-3">
+                <span id="like-count-@Model.Id">@Model.LikeCount Me Gusta</span>
+                <span id="dislike-count-@Model.Id">@Model.DislikeCount No Me Gusta</span>
+            </div>
+            <span>@Model.CommentCount Comentarios</span>
+        </div>
+
+        @{
+            var likeBtnStyle = Model.CurrentUserHasLiked ? "color: #00D4FF; background: rgba(0, 212, 255, 0.1);" : "";
+            var dislikeBtnStyle = Model.CurrentUserHasDisliked ? "color: #EF4444; background: rgba(239, 68, 68, 0.1);" : "";
+        }
+        <div class="flex items-center justify-between border-t border-card-border/50 pt-2 px-1">
+            <button type="button" id="like-btn-@Model.Id" style="@likeBtnStyle" class="flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200" onclick="toggleReaction('@Model.Id', 0)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                </svg>
+                Me Gusta
+            </button>
+            <button type="button" id="dislike-btn-@Model.Id" style="@dislikeBtnStyle" class="flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200" onclick="toggleReaction('@Model.Id', 1)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
+                </svg>
+                No Me Gusta
+            </button>
+            <a asp-controller="Post" asp-action="Details" asp-route-id="@Model.Id" class="flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                </svg>
+                Comentar
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    if (typeof toggleReaction !== 'function') {
+        window.toggleReaction = function(postId, typeId) {
+            // Deshabilitar los botones para evitar doble clic
+            var likeBtn = document.getElementById('like-btn-' + postId);
+            var dislikeBtn = document.getElementById('dislike-btn-' + postId);
+            if (likeBtn) likeBtn.disabled = true;
+            if (dislikeBtn) dislikeBtn.disabled = true;
+
+            fetch('/Reaction/Toggle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
+                },
+                body: JSON.stringify({ PostId: postId, Type: typeId })
+            }).then(res => res.json()).then(data => {
+                if (data.success) {
+                    // Actualizar conteos sin recargar
+                    var likeCountEl = document.getElementById('like-count-' + postId);
+                    var dislikeCountEl = document.getElementById('dislike-count-' + postId);
+                    
+                    if (likeCountEl) likeCountEl.textContent = data.likeCount + ' Me Gusta';
+                    if (dislikeCountEl) dislikeCountEl.textContent = data.dislikeCount + ' No Me Gusta';
+
+                    // Actualizar estilos activos de los botones
+                    if (likeBtn) {
+                        if (data.userReaction === 0) {
+                            likeBtn.style.color = '#00D4FF';
+                            likeBtn.style.background = 'rgba(0, 212, 255, 0.1)';
+                        } else {
+                            likeBtn.style.color = '';
+                            likeBtn.style.background = '';
+                        }
+                    }
+                    if (dislikeBtn) {
+                        if (data.userReaction === 1) {
+                            dislikeBtn.style.color = '#EF4444';
+                            dislikeBtn.style.background = 'rgba(239, 68, 68, 0.1)';
+                        } else {
+                            dislikeBtn.style.color = '';
+                            dislikeBtn.style.background = '';
+                        }
+                    }
+                } else {
+                    alert(data.error || 'Error al reaccionar');
+                }
+            }).catch(() => {
+                alert('Error de conexión al reaccionar.');
+            }).finally(() => {
+                // Re-habilitar botones
+                if (likeBtn) likeBtn.disabled = false;
+                if (dislikeBtn) dislikeBtn.disabled = false;
+            });
+        }
+    }
+</script>
+

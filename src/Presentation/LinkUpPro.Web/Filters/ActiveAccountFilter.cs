@@ -1,28 +1,29 @@
+using LinkUpPro.Domain.Interfaces.Repositories.User;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Authentication;
 using LinkUpPro.Infrastructure.Identity.Entities;
 
 namespace LinkUpPro.Web.Filters;
 
 /// <summary>
-/// Filter that validates if authenticated users have active accounts.
-/// Inactive accounts are automatically logged out and redirected to login.
-/// NOTE: This is a placeholder that validates Identity authentication.
-/// Enhanced validation with domain User.IsActive should be implemented
-/// in controllers when domain services are integrated.
+/// Filtro global que valida en cada request que:
+/// 1. El usuario existe en Identity.
+/// 2. Si tiene claim "uid" válido, verifica que la cuenta de dominio esté activa.
 /// </summary>
 public class ActiveAccountFilter : IAsyncActionFilter
 {
     private readonly SignInManager<AppUser> _signInManager;
+    private readonly IUserRepository _userRepository;
     private readonly ILogger<ActiveAccountFilter> _logger;
 
     public ActiveAccountFilter(
         SignInManager<AppUser> signInManager,
+        IUserRepository userRepository,
         ILogger<ActiveAccountFilter> logger)
     {
         _signInManager = signInManager;
+        _userRepository = userRepository;
         _logger = logger;
     }
 
@@ -30,35 +31,52 @@ public class ActiveAccountFilter : IAsyncActionFilter
         ActionExecutingContext context,
         ActionExecutionDelegate next)
     {
-        // Only validate if the user is authenticated
         if (context.HttpContext.User.Identity?.IsAuthenticated == true)
         {
+            // 1. Verificar que exista en Identity
             var appUser = await _signInManager.UserManager.GetUserAsync(context.HttpContext.User);
 
-            // If Identity user not found, sign out and redirect
             if (appUser == null)
             {
-                _logger.LogWarning("Authenticated user not found in Identity system");
-                
-                // Sign out the user
-                await _signInManager.SignOutAsync();
-
-                // Redirect to login with message
-                context.Result = new RedirectToActionResult(
-                    "Login",
-                    "Auth",
-                    new { message = "Su sesión ha expirado. Por favor, inicie sesión nuevamente." }
-                );
+                _logger.LogWarning("Usuario autenticado no encontrado en Identity. Cerrando sesión.");
+                await ForceSignOut(context, "Su sesión ha expirado. Por favor, inicie sesión nuevamente.");
                 return;
             }
 
-            // TODO: Additional validation with domain User.IsActive
-            // should be implemented when integrating with domain services:
-            // var domainUser = await _userRepository.GetByIdAsync(userId);
-            // if (domainUser == null || !domainUser.IsActive) { ... }
+            // 2. Verificar IsActive en el dominio usando el claim "uid"
+            //    Solo bloquear si el uid es válido y el usuario realmente está inactivo.
+            //    Si el uid no existe o es Guid.Empty, dejar pasar (no interrumpir la sesión).
+            var uidClaim = context.HttpContext.User.FindFirst("uid")?.Value;
+            if (Guid.TryParse(uidClaim, out var domainUserId) && domainUserId != Guid.Empty)
+            {
+                var domainUser = await _userRepository.GetByIdAsync(domainUserId);
+
+                if (domainUser != null && !domainUser.IsActive)
+                {
+                    _logger.LogWarning(
+                        "Cuenta de dominio inactiva para uid={UserId}. Cerrando sesión.", domainUserId);
+                    await ForceSignOut(context, "Su cuenta ha sido desactivada. Contacte al administrador.");
+                    return;
+                }
+
+                if (domainUser == null)
+                {
+                    _logger.LogWarning(
+                        "Cuenta de dominio no encontrada para uid={UserId}. Continuando sesión.", domainUserId);
+                    // No cerrar sesión — podría ser un problema de sincronización temporal
+                }
+            }
         }
 
-        // Continue with the action execution
         await next();
+    }
+
+    private async Task ForceSignOut(ActionExecutingContext context, string message)
+    {
+        await _signInManager.SignOutAsync();
+        context.Result = new RedirectToActionResult(
+            "Login",
+            "Auth",
+            new { message });
     }
 }

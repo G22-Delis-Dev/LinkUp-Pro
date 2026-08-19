@@ -1,0 +1,101 @@
+@using LinkUpPro.Application.Interfaces.Friendship
+@inject IFriendRequestQueryService FriendRequestQueryService
+@{
+    var currentUserIdStr = User.FindFirst("uid")?.Value;
+    var currentUserId = string.IsNullOrEmpty(currentUserIdStr) ? Guid.Empty : Guid.Parse(currentUserIdStr);
+    
+    // Obtener cantidad de solicitudes pendientes
+    var pendingRequests = await FriendRequestQueryService.GetReceivedRequestsAsync(currentUserId);
+    var pendingCount = pendingRequests.Count;
+}
+
+@* Menú para usuarios autenticados *@
+<div class="flex items-center gap-4">
+
+    <!-- Inicio -->
+    <a asp-controller="Home" asp-action="Index" class="p-2 text-text-muted hover:text-white hover:bg-white/5 rounded-full transition-all group flex items-center gap-2 px-3" title="Inicio">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:stroke-accent transition-colors">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        <span class="hidden md:inline text-sm font-semibold group-hover:text-white">Inicio</span>
+    </a>
+    
+    <!-- Amigos -->
+    <a asp-controller="FriendList" asp-action="Index" class="p-2 text-text-muted hover:text-white hover:bg-white/5 rounded-full transition-all group flex items-center gap-2 px-3" title="Mis Amigos">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:stroke-accent transition-colors">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span class="hidden md:inline text-sm font-semibold group-hover:text-white">Amigos</span>
+    </a>
+    
+    <!-- Battleship -->
+    <a asp-controller="BattleshipGameList" asp-action="Index" class="p-2 text-text-muted hover:text-white hover:bg-white/5 rounded-full transition-all group flex items-center gap-2 px-3" title="Battleship">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:stroke-accent transition-colors">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+        <span class="hidden md:inline text-sm font-semibold group-hover:text-white">Battleship</span>
+    </a>
+
+    <div class="w-px h-6 bg-card-border mx-2 hidden md:block"></div>
+
+    <!-- Solicitudes de amistad -->
+    <a asp-controller="FriendRequestList" asp-action="Index" class="p-2 text-text-muted hover:text-white hover:bg-white/5 rounded-full transition-all group relative" title="Solicitudes">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:stroke-accent transition-colors">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="8.5" cy="7" r="4"></circle>
+            <line x1="20" y1="8" x2="20" y2="14"></line>
+            <line x1="23" y1="11" x2="17" y2="11"></line>
+        </svg>
+        @if (pendingCount > 0)
+        {
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-accent text-primary text-[10px] font-black rounded-full flex items-center justify-center border-2 border-primary">@pendingCount</span>
+        }
+    </a>
+
+    <!-- Notificaciones -->
+    <a asp-controller="Notification" asp-action="Index" class="p-2 text-text-muted hover:text-white hover:bg-white/5 rounded-full transition-all group relative" title="Notificaciones">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:stroke-accent transition-colors">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+    </a>
+
+    <!-- Dropdown Perfil -->
+    <div class="relative group ml-2">
+        <button type="button" class="flex items-center gap-2 p-1 pr-3 rounded-full hover:bg-white/5 border border-transparent hover:border-white/10 transition-all focus:outline-none" id="user-menu-button">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-r from-secondary to-accent flex items-center justify-center text-white font-bold text-sm overflow-hidden shadow-sm">
+                <span class="select-none">@User.Identity?.Name?.Substring(0, 1).ToUpper()</span>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-text-muted group-hover:text-white transition-colors">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </button>
+
+        <div class="absolute right-0 mt-2 w-48 bg-card-bg border border-card-border backdrop-blur-xl rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right z-50">
+            <div class="py-1">
+                <a asp-controller="Profile" asp-action="View" class="block px-4 py-2 text-sm text-text-primary hover:bg-white/10 hover:text-accent transition-colors flex items-center gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    Mi Perfil
+                </a>
+                
+                <div class="h-px bg-card-border my-1"></div>
+
+                <a asp-controller="Auth" asp-action="Logout" class="block px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors flex items-center gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Cerrar Sesión
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -361,3 +361,18 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Archivos del proyecto
+Evaluacion mini proyecto LinkUp Pro.pdf
+Mini proyecto LinkUp Pro.pdf
+**/Storage/README.md
+**/Storage/README.txt
+_docs/GUIA_IMPLEMENTACION_IDENTITY_PROFE.md
+_docs/MASTER_PLAN_EVALUACION_LINKUP_PRO.md
+_docs/Video*.txt
+
+# Agent Artifacts
+task.md
+walkthrough.md
+implementation_plan.md
+research_notes.md

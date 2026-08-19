@@ -7,7 +7,7 @@ public class Post : AuditableEntity<Guid>
 {
     public Guid UserId { get; set; }
     public string Content { get; set; } = null!;
-    public PostPrivacy Privacy { get; set; } = PostPrivacy.Public;
+    public PostPrivacy Privacy { get; set; } = PostPrivacy.FriendsOnly;
     public PostContentType ContentType { get; set; } = PostContentType.Text;
     public bool AllowComments { get; set; } = true;
 

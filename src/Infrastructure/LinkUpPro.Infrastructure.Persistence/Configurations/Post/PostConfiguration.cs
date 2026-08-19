@@ -1,4 +1,4 @@
-﻿using LinkUpPro.Domain.Entities.Post;
+using LinkUpPro.Domain.Entities.Post;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -41,8 +41,8 @@ namespace LinkUpPro.Infrastructure.Persistence.Configurations.Post
             builder.Property(p => p.LastModifiedAt);
 
             // FK → User (autor)
-            builder.HasOne<Domain.Entities.User.User>()
-                   .WithMany()
+            builder.HasOne(p => p.User)
+                   .WithMany(u => u.Posts)
                    .HasForeignKey(p => p.UserId)
                    .OnDelete(DeleteBehavior.Restrict);
 
